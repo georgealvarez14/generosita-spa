@@ -1,0 +1,169 @@
+/* ============================================================
+   REACT BIG CALENDAR — GENEROSITA SPA CUSTOM THEME
+   Overrides default rbc styles to match brand palette
+   ============================================================ */
+
+/* ── Base ── */
+.rbc-calendar {
+  font-family: inherit;
+  color: #3f3f46;
+}
+
+/* ── Toolbar ── */
+.rbc-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  padding: 0.25rem 0;
+}
+.rbc-toolbar-label {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #6B347A;
+  flex: 1;
+  text-align: center;
+  text-transform: capitalize;
+}
+.rbc-btn-group {
+  display: flex;
+  gap: 0.25rem;
+}
+.rbc-btn-group button {
+  border: 1px solid #e4d8f0;
+  background: #fff;
+  color: #6B347A;
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.rbc-btn-group button:hover {
+  background: #F4E8F9;
+  border-color: #C883DA;
+}
+.rbc-btn-group button.rbc-active {
+  background: linear-gradient(135deg, #C883DA, #6B347A);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(200, 131, 218, 0.35);
+}
+
+/* ── Header Row (day names) ── */
+.rbc-header {
+  background: #FCF8FD;
+  color: #6B347A;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.6rem 0;
+  border-bottom: 2px solid #F4E8F9 !important;
+  text-align: center;
+}
+
+/* ── Today column highlight ── */
+.rbc-today {
+  background-color: #F4E8F9 !important;
+}
+
+/* ── Grid Cells ── */
+.rbc-day-bg {
+  transition: background 0.1s;
+}
+.rbc-day-bg:hover {
+  background: #fdf9ff;
+}
+.rbc-off-range-bg {
+  background: #f9f9f9;
+}
+
+/* ── Date numbers ── */
+.rbc-date-cell {
+  text-align: right;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #71717a;
+}
+.rbc-date-cell.rbc-now a {
+  color: #6B347A;
+  background: #F4E8F9;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+/* ── Events ── */
+.rbc-event {
+  background: linear-gradient(135deg, #C883DA, #6B347A) !important;
+  border: none !important;
+  border-radius: 6px !important;
+  font-size: 0.73rem;
+  font-weight: 600;
+  padding: 2px 6px !important;
+  color: white !important;
+  box-shadow: 0 2px 6px rgba(107, 52, 122, 0.3);
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.rbc-event:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+.rbc-event-label {
+  font-size: 0.68rem;
+  opacity: 0.9;
+}
+.rbc-event-content {
+  font-size: 0.73rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rbc-selected.rbc-event {
+  background: linear-gradient(135deg, #6B347A, #4a1f5a) !important;
+  box-shadow: 0 4px 12px rgba(107, 52, 122, 0.5) !important;
+}
+
+/* ── Time slots (week/day view) ── */
+.rbc-timeslot-group {
+  border-bottom-color: #f3e8ff !important;
+}
+.rbc-time-slot {
+  color: #a78bba;
+  font-size: 0.7rem;
+}
+.rbc-current-time-indicator {
+  background: #C883DA;
+  height: 2px;
+}
+.rbc-current-time-indicator::before {
+  background: #C883DA;
+}
+
+/* ── Borders ── */
+.rbc-month-view,
+.rbc-time-view,
+.rbc-agenda-view {
+  border: 1px solid #f0e8f5 !important;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+.rbc-month-row,
+.rbc-day-slot {
+  border-color: #f0e8f5 !important;
+}
+
+/* ── Show more ── */
+.rbc-show-more {
+  color: #C883DA;
+  font-size: 0.72rem;
+  font-weight: 600;
+}

@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model cliente {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre     String
+  telefono   String
+  email      String?
+  created_at DateTime? @default(now()) @db.Timestamptz
+  citas      cita[]
+  resenas    resena[]
+}
+
+model servicio {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre     String
+  precio     Int
+  duracion   Int
+  created_at DateTime? @default(now()) @db.Timestamptz
+  citas      cita[]
+}
+
+model empleado {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre     String
+  telefono   String?
+  activo     Boolean?  @default(true)
+  created_at DateTime? @default(now()) @db.Timestamptz
+  citas      cita[]
+}
+
+model horario {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  dia_semana  Int
+  hora_inicio DateTime @db.Time
+  hora_fin    DateTime @db.Time
+  activo      Boolean? @default(true)
+}
+
+model estado_cita {
+  id     Int    @id @default(autoincrement())
+  nombre String @unique
+  citas  cita[]
+}
+
+model cita {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  fecha       DateTime  @db.Date
+  hora        DateTime  @db.Time
+  cliente_id  String    @db.Uuid
+  servicio_id String    @db.Uuid
+  empleado_id String?   @db.Uuid
+  estado_id   Int?      @default(1)
+  notas       String?
+  created_at  DateTime? @default(now()) @db.Timestamptz
+
+  cliente  cliente      @relation(fields: [cliente_id], references: [id], onDelete: Cascade, map: "fk_cliente")
+  servicio servicio     @relation(fields: [servicio_id], references: [id], map: "fk_servicio")
+  empleado empleado?    @relation(fields: [empleado_id], references: [id], map: "fk_empleado")
+  estado   estado_cita? @relation(fields: [estado_id], references: [id], map: "fk_estado")
+
+  @@unique([fecha, hora], map: "cita_fecha_hora_unique")
+  @@index([fecha], map: "idx_cita_fecha")
+  @@index([cliente_id], map: "idx_cita_cliente")
+}
+
+model galeria {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  imagen_url  String
+  descripcion String?
+  created_at  DateTime? @default(now()) @db.Timestamptz
+}
+
+model resena {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cliente_id   String?   @db.Uuid
+  comentario   String?
+  calificacion Int?
+  created_at   DateTime? @default(now()) @db.Timestamptz
+
+  cliente cliente? @relation(fields: [cliente_id], references: [id], map: "fk_resena_cliente")
+}

@@ -1,26 +1,48 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --background: #fdfcff;
+  --foreground: #1F2937;
+  
+  /* Generosita SPA - Care Bears Lilac & Pink Theme */
+  --brand-purple: #C883DA; /* Sweet magical Lilac/Pink */
+  --brand-purple-dark: #6B347A; /* Dark contrast purple for text */
+  --brand-purple-light: #F4E8F9; /* Very soft lavender */
+  --brand-purple-bg: #FCF8FD; /* Off-white pinkish bg */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #1F2937;
+    --foreground: #F5F3FF;
   }
 }
 
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-brand: var(--brand-purple);
+  --color-brand-dark: var(--brand-purple-dark);
+  --color-brand-light: var(--brand-purple-light);
+  --color-brand-bg: var(--brand-purple-bg);
+}
+
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), sans-serif;
+  @apply antialiased selection:bg-brand-light selection:text-brand-dark;
+}
+
+/* Animations & utils */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .glass-panel {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-xl;
+  }
+  .dark .glass-panel {
+    @apply bg-black/40 backdrop-blur-md border border-white/10 shadow-xl;
+  }
 }
