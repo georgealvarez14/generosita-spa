@@ -17,19 +17,52 @@ export default function AdminLogin() {
     setLoading(true);
     setError('');
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      // 1. Autenticar con Supabase Auth
+      const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (signInError) {
-      setError(signInError.message);
+      if (signInError) {
+        setError(signInError.message);
+        setLoading(false);
+        return;
+      }
+
+      if (!authData.user) {
+        setError('No se pudo obtener información del usuario');
+        setLoading(false);
+        return;
+      }
+
+      // 2. Verificar el rol en la base de datos
+      const { data: clienteData, error: clienteError } = await supabase
+        .from('cliente')
+        .select('rol')
+        .eq('email', email)
+        .single();
+
+      if (clienteError) {
+        setError('Error al verificar permisos: ' + clienteError.message);
+        setLoading(false);
+        return;
+      }
+
+      // 3. Redirigir según el rol
+      const rol = clienteData?.rol || 'cliente';
+      
+      if (rol === 'admin') {
+        router.push('/admin');
+      } else {
+        router.push('/portal'); // Portal del cliente
+      }
+      router.refresh();
+    } catch (err: any) {
+      setError('Error inesperado: ' + err.message);
+    } finally {
       setLoading(false);
-      return;
     }
-
-    router.push('/admin');
-    router.refresh();
   };
 
   return (

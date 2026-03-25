@@ -30,17 +30,58 @@ export async function updateSession(request: NextRequest) {
   // Refresh auth token
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Authorization rules
-  if (!user && request.nextUrl.pathname.startsWith('/admin') && !request.nextUrl.pathname.startsWith('/admin/login')) {
+  const pathname = request.nextUrl.pathname
+
+  // Rutas públicas que no necesitan auth
+  const publicRoutes = ['/', '/servicios', '/galeria', '/login', '/admin/login']
+  if (publicRoutes.includes(pathname)) {
+    return supabaseResponse
+  }
+
+  // Si no hay usuario y está en ruta protegida, redirigir a login
+  if (!user && (pathname.startsWith('/admin') || pathname.startsWith('/portal') || pathname.startsWith('/reservar'))) {
     const url = request.nextUrl.clone()
-    url.pathname = '/admin/login'
+    url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
-  // Protect login page if already authenticated
-  if (user && request.nextUrl.pathname === '/admin/login') {
+  // Si hay usuario, verificar rol para rutas protegidas
+  if (user && (pathname.startsWith('/admin') || pathname.startsWith('/portal'))) {
+    // Obtener rol del usuario desde la base de datos
+    const { data: clienteData, error } = await supabase
+      .from('cliente')
+      .select('rol')
+      .eq('email', user.email)
+      .single()
+
+    const rol = clienteData?.rol || 'cliente'
+
+    // Si intenta acceder a /admin pero no es admin
+    if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login') && rol !== 'admin') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/portal'
+      return NextResponse.redirect(url)
+    }
+
+    // Si es admin y está en /portal, redirigir a admin (opcional)
+    if (pathname.startsWith('/portal') && rol === 'admin') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/admin'
+      return NextResponse.redirect(url)
+    }
+  }
+
+  // Si ya está autenticado y va a login, redirigir según rol
+  if (user && (pathname === '/login' || pathname === '/admin/login')) {
+    const { data: clienteData } = await supabase
+      .from('cliente')
+      .select('rol')
+      .eq('email', user.email)
+      .single()
+
+    const rol = clienteData?.rol || 'cliente'
     const url = request.nextUrl.clone()
-    url.pathname = '/admin'
+    url.pathname = rol === 'admin' ? '/admin' : '/portal'
     return NextResponse.redirect(url)
   }
 

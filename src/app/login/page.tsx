@@ -1,0 +1,201 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/utils/supabase/client';
+import Link from 'next/link';
+
+export default function LoginPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const supabase = createClient();
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      // 1. Autenticar con Supabase Auth
+      const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        setError(signInError.message);
+        setLoading(false);
+        return;
+      }
+
+      if (!authData.user) {
+        setError('No se pudo obtener información del usuario');
+        setLoading(false);
+        return;
+      }
+
+      // 2. Verificar el rol en la base de datos
+      const { data: clienteData, error: clienteError } = await supabase
+        .from('cliente')
+        .select('rol')
+        .eq('email', email)
+        .single();
+
+      if (clienteError) {
+        // Si no existe en la tabla cliente, podría ser un usuario nuevo
+        // Crear registro de cliente por defecto
+        const { error: createError } = await supabase
+          .from('cliente')
+          .insert({
+            email: email,
+            nombre: authData.user.user_metadata?.full_name || email.split('@')[0],
+            telefono: '',
+            rol: 'cliente',
+          });
+
+        if (createError) {
+          setError('Error al crear perfil: ' + createError.message);
+          setLoading(false);
+          return;
+        }
+
+        router.push('/portal');
+        router.refresh();
+        return;
+      }
+
+      // 3. Redirigir según el rol
+      const rol = clienteData?.rol || 'cliente';
+      
+      if (rol === 'admin') {
+        router.push('/admin');
+      } else {
+        router.push('/portal');
+      }
+      router.refresh();
+    } catch (err: any) {
+      setError('Error inesperado: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex-1 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-zinc-50/50 w-full min-h-max">
+      <div className="w-full max-w-[1000px] bg-white rounded-3xl shadow-2xl shadow-purple-900/10 overflow-hidden flex flex-col lg:flex-row border border-purple-100/60">
+        
+        {/* Lado Izquierdo - Visual */}
+        <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-purple-700 via-[#9333ea] to-pink-500 text-white flex-col justify-between p-12 overflow-hidden">
+          {/* Decoración de fondo */}
+          <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
+            <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full bg-white blur-3xl" />
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full border border-white/30 border-dashed animate-spin-slow" />
+          </div>
+
+          <div className="relative z-10">
+            <Link href="/" className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md shadow-sm rounded-full px-5 py-2.5 text-sm font-semibold hover:bg-white/20 transition-colors">
+              <span>←</span> Volver al inicio
+            </Link>
+          </div>
+
+          <div className="relative z-10 mt-12 mb-10">
+            <h1 className="text-4xl font-bold font-outfit mb-5 leading-tight tracking-tight">
+              Bienvenida de nuevo a <br />Generosita SPA 💜
+            </h1>
+            <p className="text-purple-100 text-[1.1rem] leading-relaxed">
+              Inicia sesión para gestionar tus citas, ver tu historial de servicios y descubrir ofertas exclusivas pensadas para ti.
+            </p>
+          </div>
+          
+          <div className="relative z-10">
+            <p className="text-sm font-medium text-purple-200/90 tracking-wide">
+              © {new Date().getFullYear()} Generosita SPA by Ena Giraldo
+            </p>
+          </div>
+        </div>
+
+        {/* Lado Derecho - Formulario */}
+        <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 bg-white">
+          <div className="w-full max-w-sm space-y-8">
+            
+            <div className="text-center lg:text-left">
+              {/* Solo en móviles mostramos el volver al inicio aquí */}
+              <div className="lg:hidden mb-6 text-left">
+                 <Link href="/" className="text-sm text-brand font-semibold hover:text-brand-dark transition-colors inline-block bg-brand/5 px-4 py-2 rounded-full">
+                   ← Volver al inicio
+                 </Link>
+              </div>
+              
+              <h2 className="text-3xl font-bold font-outfit text-zinc-900 mb-2 tracking-tight">Ingresar a tu cuenta</h2>
+              <p className="text-zinc-500 font-medium text-sm">Por favor, ingresa tus credenciales abajo.</p>
+            </div>
+
+            {error && (
+              <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-xl flex items-center shadow-sm">
+                <div className="text-red-700 text-sm font-medium">{error}</div>
+              </div>
+            )}
+
+            <form onSubmit={handleLogin} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-zinc-700">Correo Electrónico</label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full px-4 py-3.5 rounded-xl border border-zinc-200/80 bg-zinc-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/80 focus:border-brand transition-all shadow-sm font-medium text-zinc-900 placeholder-zinc-400"
+                    placeholder="tu@correo.com"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-sm font-bold text-zinc-700">Contraseña</label>
+                  <a href="#" className="text-xs font-bold text-brand hover:text-brand-dark transition-colors">¿Olvidaste tu contraseña?</a>
+                </div>
+                <div className="relative">
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="w-full px-4 py-3.5 rounded-xl border border-zinc-200/80 bg-zinc-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/80 focus:border-brand transition-all shadow-sm font-medium text-zinc-900 placeholder-zinc-400"
+                    placeholder="••••••••"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className={`relative w-full overflow-hidden group mt-4 py-4 rounded-xl text-white font-bold transition-all shadow-lg ${
+                  loading ? 'bg-zinc-400 cursor-not-allowed shadow-none' : 'bg-brand hover:shadow-brand/40 hover:-translate-y-[2px] hover:bg-brand-dark active:translate-y-0'
+                }`}
+              >
+                {!loading && (
+                  <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] skew-x-12 group-hover:animate-shimmer" />
+                )}
+                <span className="relative z-10 tracking-wide">{loading ? 'Verificando datos...' : 'Iniciar Sesión'}</span>
+              </button>
+            </form>
+
+            <div className="mt-8 pt-6 border-t border-zinc-100 text-center">
+              <p className="text-sm text-zinc-600 font-medium">
+                ¿No tienes una cuenta aún? <br className="sm:hidden" />
+                <Link href="/reservar" className="font-bold text-brand hover:text-brand-dark transition-colors ml-1">
+                  Reserva para registrarte
+                </Link>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -28,7 +28,7 @@ export default function RootLayout({
     <html lang="es" className={`${inter.variable} ${outfit.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>
         <Header />
-        <main className="flex-1">
+        <main className="flex-1 flex flex-col relative">
           {children}
         </main>
         <Footer />

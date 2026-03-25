@@ -1,17 +1,24 @@
 import BookingForm from '@/components/BookingForm';
+import { CalendarHeart, Sparkles } from 'lucide-react';
 
 export default function ReservarPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-50 pt-16 pb-20 text-foreground">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-purple-100 py-12">
       <div className="container mx-auto px-4 max-w-4xl">
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold font-outfit text-brand-dark mb-4">Reserva tu Cita</h1>
-          <p className="text-zinc-500">
+          <div className="inline-flex items-center rounded-full border border-purple-200 bg-white/60 px-4 py-2 text-sm font-medium text-purple-700 backdrop-blur-sm mb-4">
+            <Sparkles className="mr-2 h-4 w-4" />
+            Reserva Fácil
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold font-outfit text-purple-900 mb-4">
+            Reserva tu Cita
+          </h1>
+          <p className="text-purple-700/70 text-lg max-w-xl mx-auto">
             Sigue estos sencillos pasos para asegurar tu espacio con nuestras especialistas.
           </p>
         </div>
-        
-        <div className="bg-white rounded-3xl shadow-xl shadow-brand-dark/5 p-6 md:p-10 border border-brand-light/20">
+
+        <div className="bg-white rounded-3xl shadow-2xl shadow-purple-100 p-6 md:p-10 border border-purple-100">
           <BookingForm />
         </div>
       </div>
