@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -11,17 +13,42 @@ export async function POST(req: Request) {
     }
 
     const timeDate = new Date(`1970-01-01T${hora}:00Z`);
+    const [reqHours, reqMins] = hora.split(':').map(Number);
+    const reqStartMin = reqHours * 60 + reqMins;
+    
+    // Obtenemos el servicio solicitado para saber su duración
+    const servicioSolicitado = await prisma.servicio.findUnique({ where: { id: servicioId }});
+    const duracionSolicitada = servicioSolicitado?.duracion || 60;
+    const reqEndMin = reqStartMin + duracionSolicitada;
 
-    // Check availability
-    const existingCita = await (prisma.cita as any).findFirst({
+    // Use robust date boundaries to capture all appointments that land on the same calendar day
+    const baseDateString = new Date(fecha).toISOString().split('T')[0]; // "YYYY-MM-DD"
+    const dayStart = new Date(`${baseDateString}T00:00:00.000Z`);
+    const dayEnd = new Date(`${baseDateString}T23:59:59.999Z`);
+
+    // Check availability against all appointments that day
+    const citasDelDia = await (prisma.cita as any).findMany({
       where: {
-        fecha: new Date(fecha),
-        hora: timeDate,
-      }
+        fecha: {
+          gte: dayStart,
+          lte: dayEnd
+        },
+        estado_id: { not: 3 } // no contar canceladas
+      },
+      include: { servicio: true }
     });
 
-    if (existingCita) {
-      return NextResponse.json({ error: 'El horario seleccionado ya no está disponible.' }, { status: 400 });
+    const isOverlapping = citasDelDia.some((cita: any) => {
+      const horaStr = cita.hora.toISOString().split('T')[1].substring(0, 5); 
+      const [h, m] = horaStr.split(':').map(Number);
+      const startMin = h * 60 + m;
+      const endMin = startMin + (cita.servicio?.duracion || 60);
+      
+      return reqStartMin < endMin && reqEndMin > startMin;
+    });
+
+    if (isOverlapping) {
+      return NextResponse.json({ error: 'El horario seleccionado choca con otra cita existente.' }, { status: 400 });
     }
 
     // Ensure client exists or create one

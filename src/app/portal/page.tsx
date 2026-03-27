@@ -41,10 +41,7 @@ export default function PortalCliente() {
         return;
       }
 
-      if (data.rol === 'admin') {
-        router.push('/admin');
-        return;
-      }
+      // Removimos la redirección de admin para que puedan ver su perfil
 
       setCliente(data);
       setLoading(false);
@@ -68,92 +65,84 @@ export default function PortalCliente() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-purple-100">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-purple-100 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="relative w-10 h-10">
-              <Image
-                src="/logo.png"
-                alt="Generosita Spa"
-                fill
-                className="object-contain"
-              />
-            </div>
-            <span className="font-outfit text-lg font-bold text-purple-700">Generosita Spa</span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <span className="text-purple-700 hidden sm:block">Hola, {cliente?.nombre}</span>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 text-sm text-purple-600 hover:text-purple-800 transition-colors bg-purple-50 px-3 py-2 rounded-full"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">Salir</span>
-            </button>
-          </div>
-        </div>
-      </header>
-
+    <div className="flex-1 bg-gradient-to-br from-purple-50/50 via-white to-pink-50/50">
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold font-outfit text-purple-900 mb-2">
-            Mi Portal
-          </h1>
-          <p className="text-purple-600">Bienvenida, {cliente?.nombre}</p>
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16 max-w-7xl">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-bold font-outfit text-purple-950 mb-3 tracking-tight">
+              Mi Portal
+            </h1>
+            <p className="text-purple-900/60 text-lg">Bienvenida de nuevo, <span className="font-semibold text-purple-900 tracking-wide capitalize">{cliente?.nombre?.split(' ')[0]}</span> 💜</p>
+          </div>
+          
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-5 py-2.5 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 font-semibold rounded-full transition-colors self-start sm:self-auto border border-red-100/50"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Cerrar Sesión</span>
+          </button>
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
           {/* Mis Citas */}
           <Link
             href="/portal/citas"
-            className="bg-white rounded-3xl p-6 shadow-sm hover:shadow-xl hover:shadow-purple-100 transition-all border border-purple-100 hover:border-purple-200 group"
+            className="bg-white rounded-3xl p-8 shadow-[0_8px_30px_rgb(20,0,50,0.03)] hover:shadow-[0_8px_30px_rgb(20,0,50,0.08)] transition-all duration-300 border border-purple-100/50 group flex flex-col items-start hover:-translate-y-1"
           >
-            <div className="bg-purple-100 w-14 h-14 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-purple-600 transition-colors">
-              <Calendar className="w-7 h-7 text-purple-600 group-hover:text-white transition-colors" />
+            <div className="bg-purple-50 group-hover:bg-brand group-hover:shadow-lg group-hover:shadow-brand/30 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-all duration-300">
+              <Calendar className="w-8 h-8 text-brand group-hover:text-white transition-colors" />
             </div>
-            <h2 className="text-xl font-bold text-purple-900 mb-2">Mis Citas</h2>
-            <p className="text-purple-600/70 text-sm">Ver y gestionar tus citas programadas</p>
+            <h2 className="text-2xl font-bold font-outfit text-purple-950 mb-2 tracking-tight">Mis Citas</h2>
+            <p className="text-purple-900/60 font-medium">Ver y gestionar tus citas programadas.</p>
           </Link>
 
           {/* Mi Perfil */}
           <Link
             href="/portal/perfil"
-            className="bg-white rounded-3xl p-6 shadow-sm hover:shadow-xl hover:shadow-purple-100 transition-all border border-purple-100 hover:border-purple-200 group"
+            className="bg-white rounded-3xl p-8 shadow-[0_8px_30px_rgb(20,0,50,0.03)] hover:shadow-[0_8px_30px_rgb(20,0,50,0.08)] transition-all duration-300 border border-purple-100/50 group flex flex-col items-start hover:-translate-y-1"
           >
-            <div className="bg-purple-100 w-14 h-14 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-purple-600 transition-colors">
-              <User className="w-7 h-7 text-purple-600 group-hover:text-white transition-colors" />
+            <div className="bg-purple-50 group-hover:bg-brand group-hover:shadow-lg group-hover:shadow-brand/30 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-all duration-300">
+              <User className="w-8 h-8 text-brand group-hover:text-white transition-colors" />
             </div>
-            <h2 className="text-xl font-bold text-purple-900 mb-2">Mi Perfil</h2>
-            <p className="text-purple-600/70 text-sm">Actualizar tu información personal</p>
+            <h2 className="text-2xl font-bold font-outfit text-purple-950 mb-2 tracking-tight">Mi Perfil</h2>
+            <p className="text-purple-900/60 font-medium">Actualizar tu información personal y cuenta.</p>
           </Link>
 
           {/* Nueva Reseña */}
           <Link
             href="/portal/resena"
-            className="bg-white rounded-3xl p-6 shadow-sm hover:shadow-xl hover:shadow-purple-100 transition-all border border-purple-100 hover:border-purple-200 group"
+            className="bg-white rounded-3xl p-8 shadow-[0_8px_30px_rgb(20,0,50,0.03)] hover:shadow-[0_8px_30px_rgb(20,0,50,0.08)] transition-all duration-300 border border-purple-100/50 group flex flex-col items-start hover:-translate-y-1"
           >
-            <div className="bg-purple-100 w-14 h-14 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-purple-600 transition-colors">
-              <Star className="w-7 h-7 text-purple-600 group-hover:text-white transition-colors" />
+            <div className="bg-purple-50 group-hover:bg-brand group-hover:shadow-lg group-hover:shadow-brand/30 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-all duration-300">
+              <Star className="w-8 h-8 text-brand group-hover:text-white transition-colors" />
             </div>
-            <h2 className="text-xl font-bold text-purple-900 mb-2">Dejar Reseña</h2>
-            <p className="text-purple-600/70 text-sm">Comparte tu experiencia con nosotros</p>
+            <h2 className="text-2xl font-bold font-outfit text-purple-950 mb-2 tracking-tight">Dejar Reseña</h2>
+            <p className="text-purple-900/60 font-medium">Comparte tu experiencia con nosotros.</p>
           </Link>
         </div>
 
         {/* Acción Principal */}
-        <div className="mt-12 bg-gradient-to-br from-purple-600 to-pink-500 rounded-3xl p-8 text-center text-white">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">¿Necesitas agendar una cita?</h2>
-          <p className="text-white/80 mb-6 max-w-md mx-auto">Reserva tu próximo servicio en minutos y deja tus manos hermosas</p>
-          <Link
-            href="/reservar"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-purple-600 font-bold rounded-full hover:bg-purple-50 transition-all shadow-xl"
-          >
-            Reservar Ahora
-            <ArrowRight className="w-5 h-5" />
-          </Link>
+        <div className="mt-12 bg-gradient-to-br from-purple-700 via-[#9333ea] to-pink-500 rounded-[2.5rem] p-10 md:p-14 text-center text-white shadow-2xl shadow-purple-900/20 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
+            <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-white blur-3xl" />
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full border border-white/20 border-dashed animate-spin-slow" />
+          </div>
+          
+          <div className="relative z-10 flex flex-col items-center">
+            <h2 className="text-3xl md:text-5xl font-bold font-outfit mb-5 tracking-tight text-balance">¿Necesitas agendar una cita?</h2>
+            <p className="text-purple-100 text-lg mb-10 max-w-2xl mx-auto font-medium text-balance">
+              Reserva tu próximo servicio en minutos, disfruta de nuestras promociones exclusivas y deja tus uñas hermosas hoy mismo.
+            </p>
+            <Link
+              href="/reservar"
+              className="inline-flex items-center gap-3 px-10 py-4 bg-white text-purple-950 font-bold rounded-full hover:bg-purple-50 hover:scale-105 transition-all shadow-xl hover:shadow-white/20 text-lg group"
+            >
+              Reservar Ahora
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform text-brand" />
+            </Link>
+          </div>
         </div>
       </main>
     </div>

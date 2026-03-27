@@ -4,14 +4,15 @@ import { prisma } from '@/lib/prisma';
 // PATCH /api/services/[id] - update a service
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await req.json();
     const { nombre, precio, duracion } = body;
 
     const updated = await prisma.servicio.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(nombre !== undefined && { nombre }),
         ...(precio !== undefined && { precio: Number(precio) }),
@@ -28,10 +29,11 @@ export async function PATCH(
 // DELETE /api/services/[id] - delete a service
 export async function DELETE(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await prisma.servicio.delete({ where: { id: params.id } });
+    const { id } = await params;
+    await prisma.servicio.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error(error);

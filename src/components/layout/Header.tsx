@@ -1,11 +1,23 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { CalendarHeart, User } from 'lucide-react';
+import { CalendarHeart, User, ShieldCheck } from 'lucide-react';
 import { createClient } from '@/utils/supabase/server';
+import { prisma } from '@/lib/prisma';
 
 export default async function Header() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  
+  let isAdmin = false;
+  if (user) {
+    const dbUser = await prisma.cliente.findUnique({
+      where: { id: user.id },
+      select: { rol: true }
+    });
+    if (dbUser?.rol === 'admin') {
+      isAdmin = true;
+    }
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-xl border-b border-purple-100/50 shadow-sm transition-all duration-300">
@@ -29,28 +41,40 @@ export default async function Header() {
         </Link>
 
         {/* Centro: Nav Links Desktop */}
-        <nav className="hidden md:flex items-center gap-10">
-          <Link href="/servicios" className="text-sm font-semibold text-zinc-600 hover:text-brand transition-colors relative group py-2">
+        <nav className="hidden md:flex items-center gap-6 lg:gap-8">
+          <Link href="/" className="text-sm font-semibold text-purple-900/70 hover:text-brand transition-colors relative group py-2">
+            Inicio
+            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-brand transition-all duration-300 group-hover:w-full"></span>
+          </Link>
+          <Link href="/servicios" className="text-sm font-semibold text-purple-900/70 hover:text-brand transition-colors relative group py-2">
             Servicios
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-brand transition-all duration-300 group-hover:w-full"></span>
           </Link>
-          <Link href="/galeria" className="text-sm font-semibold text-zinc-600 hover:text-brand transition-colors relative group py-2">
+          <Link href="/galeria" className="text-sm font-semibold text-purple-900/70 hover:text-brand transition-colors relative group py-2">
             Galería
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-brand transition-all duration-300 group-hover:w-full"></span>
           </Link>
         </nav>
 
         {/* Lado Derecho: Acciones Desktop */}
-        <div className="hidden md:flex items-center gap-6">
+        <div className="hidden md:flex items-center gap-4 lg:gap-6">
+          {user && isAdmin && (
+            <Link href="/admin" className="text-sm font-bold text-brand hover:text-brand-dark transition-colors flex items-center gap-2 group hidden xl:flex">
+              <div className="bg-brand-light/10 p-2 rounded-full group-hover:bg-brand-light/30 transition-colors">
+                <ShieldCheck className="w-4 h-4 text-brand" />
+              </div>
+              <span>Admin</span>
+            </Link>
+          )}
           {user ? (
-            <Link href="/portal" className="text-sm font-bold text-zinc-600 hover:text-brand transition-colors flex items-center gap-2 group">
+            <Link href="/portal" className="text-sm font-bold text-purple-900/70 hover:text-brand transition-colors flex items-center gap-2 group">
               <div className="bg-brand-light/10 p-2 rounded-full group-hover:bg-brand-light/30 transition-colors">
                 <User className="w-4 h-4 text-brand" />
               </div>
               <span className="hidden lg:block">Mi Perfil</span>
             </Link>
           ) : (
-            <Link href="/login" className="text-sm font-bold text-zinc-600 hover:text-brand transition-colors flex items-center gap-2 group">
+            <Link href="/login" className="text-sm font-bold text-purple-900/70 hover:text-brand transition-colors flex items-center gap-2 group">
               <div className="bg-brand-light/10 p-2 rounded-full group-hover:bg-brand-light/30 transition-colors">
                 <User className="w-4 h-4 text-brand" />
               </div>

@@ -11,12 +11,7 @@
   --brand-purple-bg: #FCF8FD; /* Off-white pinkish bg */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #1F2937;
-    --foreground: #F5F3FF;
-  }
-}
+/* Dark mode has been intentionally removed to enforce the spa light theme unconditionally */
 
 @theme {
   --color-background: var(--background);

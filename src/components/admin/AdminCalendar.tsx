@@ -52,6 +52,24 @@ function EventCard({ event }: { event: CalendarEvent }) {
   );
 }
 
+// Custom event card shown inside Agenda view
+function AgendaEvent({ event }: { event: CalendarEvent }) {
+  return (
+    <div className="py-1">
+      <p className="font-bold text-zinc-800">{event.resource.cliente.nombre}</p>
+      <div className="flex items-center gap-2 text-sm text-zinc-500 mt-0.5">
+        <span>{event.resource.servicio.nombre}</span>
+        <span className="text-brand font-medium">${event.resource.servicio.precio.toLocaleString()}</span>
+        {event.resource.estado_id === 1 ? (
+          <span className="text-[10px] font-bold uppercase tracking-wide bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Pendiente</span>
+        ) : (
+          <span className="text-[10px] font-bold uppercase tracking-wide bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Confirmada</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function AdminCalendar({ citas }: Props) {
   // Default to 'week' so you can see times per day; 'agenda' shows a clean list
   const [view, setView] = useState<View>('week');
@@ -134,9 +152,21 @@ export default function AdminCalendar({ citas }: Props) {
           event: 'Cita',
         }}
         onSelectEvent={(event) => setSelectedEvent(event as CalendarEvent)}
-        // Custom component for week/day view events
+        // Custom components per view
         components={{
-          event: ({ event }) => <EventCard event={event as CalendarEvent} />,
+          week: { event: ({ event }) => <EventCard event={event as CalendarEvent} /> },
+          day: { event: ({ event }) => <EventCard event={event as CalendarEvent} /> },
+          month: { 
+            event: ({ event }) => (
+              <div className="truncate text-[10px] leading-none whitespace-nowrap">
+               <span className="opacity-75 mr-1">{format((event as CalendarEvent).start, 'HH:mm')}</span>
+               <span className="font-bold">{(event as CalendarEvent).resource.cliente.nombre}</span>
+              </div>
+            )
+          },
+          agenda: {
+            event: ({ event }) => <AgendaEvent event={event as CalendarEvent} />
+          }
         }}
         // Scroll week/day view to working hours
         scrollToTime={new Date(1970, 1, 1, 8, 0, 0)}

@@ -45,43 +45,11 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Si hay usuario, verificar rol para rutas protegidas
-  if (user && (pathname.startsWith('/admin') || pathname.startsWith('/portal'))) {
-    // Obtener rol del usuario desde la base de datos
-    const { data: clienteData, error } = await supabase
-      .from('cliente')
-      .select('rol')
-      .eq('email', user.email)
-      .single()
-
-    const rol = clienteData?.rol || 'cliente'
-
-    // Si intenta acceder a /admin pero no es admin
-    if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login') && rol !== 'admin') {
-      const url = request.nextUrl.clone()
-      url.pathname = '/portal'
-      return NextResponse.redirect(url)
-    }
-
-    // Si es admin y está en /portal, redirigir a admin (opcional)
-    if (pathname.startsWith('/portal') && rol === 'admin') {
-      const url = request.nextUrl.clone()
-      url.pathname = '/admin'
-      return NextResponse.redirect(url)
-    }
-  }
-
-  // Si ya está autenticado y va a login, redirigir según rol
+  // Si ya está autenticado y trata de ir a login, por defecto lo mandamos a portal
+  // Los layouts individuales de /admin o /portal se encargarán de verificar el rol real con Prisma
   if (user && (pathname === '/login' || pathname === '/admin/login')) {
-    const { data: clienteData } = await supabase
-      .from('cliente')
-      .select('rol')
-      .eq('email', user.email)
-      .single()
-
-    const rol = clienteData?.rol || 'cliente'
     const url = request.nextUrl.clone()
-    url.pathname = rol === 'admin' ? '/admin' : '/portal'
+    url.pathname = '/portal'
     return NextResponse.redirect(url)
   }
 

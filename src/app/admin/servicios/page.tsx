@@ -9,6 +9,14 @@ type Servicio = {
 
 const EMPTY = { nombre: '', precio: '', duracion: '' };
 
+const InputField = ({ label, value, onChange, type = 'text', placeholder = '' }: any) => (
+  <div>
+    <label className="text-xs text-zinc-500 font-medium mb-1 block">{label}</label>
+    <input type={type} value={value} onChange={onChange} placeholder={placeholder}
+      className="w-full border border-zinc-200 rounded-lg px-3 py-2 text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand" />
+  </div>
+);
+
 export default function ServiciosAdmin() {
   const [servicios, setServicios] = useState<Servicio[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,14 +68,6 @@ export default function ServiciosAdmin() {
     setDeletingId(null);
     setServicios(prev => prev.filter(s => s.id !== id));
   };
-
-  const InputField = ({ label, value, onChange, type = 'text', placeholder = '' }: any) => (
-    <div>
-      <label className="text-xs text-zinc-500 font-medium mb-1 block">{label}</label>
-      <input type={type} value={value} onChange={onChange} placeholder={placeholder}
-        className="w-full border border-zinc-200 rounded-lg px-3 py-2 text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand" />
-    </div>
-  );
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">

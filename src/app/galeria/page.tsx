@@ -1,18 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { prisma } from "@/lib/prisma";
 
-// Placeholder images mimicking Cloudinary setup
-const images = [
-  "https://images.unsplash.com/photo-1620023640244-aef411cb6249?q=80&w=600&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1522337660859-02fbefca4702?q=80&w=600&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1519014816548-bf5fe059e98b?q=80&w=600&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1595868628042-3e5f2cf32f17?q=80&w=600&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1604654894610-df63bc536371?q=80&w=600&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1599839619722-39751411ea63?q=80&w=600&auto=format&fit=crop",
-];
+export const dynamic = 'force-dynamic';
 
-export default function GaleriaPage() {
+export default async function GaleriaPage() {
+  const imagenes = await prisma.galeria.findMany({
+    orderBy: { created_at: 'desc' },
+  });
+
   return (
     <div className="flex flex-col min-h-screen pb-20">
       {/* Header section */}
@@ -28,19 +24,26 @@ export default function GaleriaPage() {
       </section>
 
       <section className="container px-4 mx-auto mt-12 max-w-6xl">
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-          {images.map((src, i) => (
-            <div key={i} className="group relative aspect-square overflow-hidden rounded-2xl bg-zinc-100">
-              <img
-                src={src}
-                alt={`Trabajo de Generosita Spa ${i + 1}`}
-                className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-brand-dark/0 group-hover:bg-brand-dark/20 transition-colors duration-300" />
-            </div>
-          ))}
-        </div>
+        {imagenes.length === 0 ? (
+          <div className="text-center py-20 bg-zinc-50 rounded-3xl border border-zinc-100">
+            <h3 className="text-2xl font-bold text-zinc-400">Próximamente</h3>
+            <p className="text-zinc-500 mt-2">Estamos preparando nuestras mejores fotos para ti.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+            {imagenes.map((img) => (
+              <div key={img.id} className="group relative aspect-square overflow-hidden rounded-2xl bg-zinc-100">
+                <Image
+                  src={img.imagen_url}
+                  alt={img.descripcion || "Trabajo de Generosita Spa"}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-brand-dark/0 group-hover:bg-brand-dark/20 transition-colors duration-300" />
+              </div>
+            ))}
+          </div>
+        )}
       </section>
       
       <div className="container mx-auto px-4 mt-16 text-center">

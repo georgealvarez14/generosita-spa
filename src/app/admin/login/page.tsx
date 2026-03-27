@@ -3,6 +3,15 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
+import { AlertCircle } from 'lucide-react';
+
+function getSpanishErrorMessage(errorMsg: string) {
+  if (errorMsg.includes('Invalid login credentials')) return 'El correo o la contraseña son incorrectos. Por favor, verifica tus datos.';
+  if (errorMsg.includes('User already registered')) return 'Este correo electrónico ya está registrado.';
+  if (errorMsg.includes('Email not confirmed')) return 'Debes confirmar tu correo electrónico antes de ingresar.';
+  if (errorMsg.includes('Password should be at least')) return 'La contraseña debe tener al menos 6 caracteres.';
+  return 'Ocurrió un error: ' + errorMsg;
+}
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -25,7 +34,7 @@ export default function AdminLogin() {
       });
 
       if (signInError) {
-        setError(signInError.message);
+        setError(getSpanishErrorMessage(signInError.message));
         setLoading(false);
         return;
       }
@@ -57,7 +66,6 @@ export default function AdminLogin() {
       } else {
         router.push('/portal'); // Portal del cliente
       }
-      router.refresh();
     } catch (err: any) {
       setError('Error inesperado: ' + err.message);
     } finally {
@@ -74,8 +82,9 @@ export default function AdminLogin() {
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm text-center">
-            {error}
+          <div className="mb-6 p-4 bg-red-50/80 border border-red-100 flex items-start gap-3 rounded-xl text-sm shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
+            <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+            <span className="text-red-700 font-medium leading-relaxed">{error}</span>
           </div>
         )}
 

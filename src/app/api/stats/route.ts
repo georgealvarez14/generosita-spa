@@ -12,16 +12,24 @@ export async function GET() {
       (prisma.cita as any).count(),
       (prisma.cita as any).count({ where: { fecha: { gte: today, lt: tomorrow } } }),
       (prisma.cita as any).count({ where: { estado_id: 1 } }),
-      prisma.cliente.count(),
+      prisma.cliente.count({
+        where: {
+          OR: [
+            { rol: 'cliente' },
+            { rol: null }
+          ]
+        }
+      }),
       prisma.servicio.count(),
       prisma.servicio.findMany({ select: { precio: true } }),
     ]);
 
-    // Estimated revenue: sum of service prices for all bookings (simplified)
-    const citasConPrecio = await (prisma.cita as any).findMany({
+    // Estimated revenue: sum of service prices ONLY for confirmed bookings (estado_id = 2)
+    const citasConfirmadasConPrecio = await (prisma.cita as any).findMany({
+      where: { estado_id: 2 },
       include: { servicio: { select: { precio: true } } },
     });
-    const ingresoEstimado = citasConPrecio.reduce((sum: number, c: any) => sum + (c.servicio?.precio ?? 0), 0);
+    const ingresoEstimado = citasConfirmadasConPrecio.reduce((sum: number, c: any) => sum + (c.servicio?.precio ?? 0), 0);
 
     return NextResponse.json({
       totalCitas,

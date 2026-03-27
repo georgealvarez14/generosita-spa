@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, Clock, CheckCircle2, ChevronRight, User, Phone, MapPin, Search, ArrowRight } from 'lucide-react';
-import { format, addDays, isSameDay } from 'date-fns';
+import { format, addDays, isSameDay, startOfDay } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { createClient } from '@/utils/supabase/client';
 
 type Servicio = { id: string; nombre: string; precio: number; duracion: number };
 type Step = 1 | 2 | 3 | 4;
@@ -16,7 +17,7 @@ const TIME_SLOTS = [
 // 5 days from today
 const getAvailableDates = () => {
   const dates = [];
-  const today = new Date();
+  const today = startOfDay(new Date());
   for (let i = 1; i <= 14; i++) {
     const d = addDays(today, i);
     // basic filter for Sundays (0) if the salon is closed
@@ -40,7 +41,12 @@ export default function BookingForm() {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorLine, setErrorLine] = useState('');
-
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  const [ocupacionesPorDia, setOcupacionesPorDia] = useState<Record<string, {startMin: number, endMin: number}[]>>({});
+  const [loadingAvailability, setLoadingAvailability] = useState(false);
+  
+  const supabase = createClient();
   const dates = getAvailableDates();
 
   useEffect(() => {
@@ -57,8 +63,39 @@ export default function BookingForm() {
         setLoadingServices(false);
       }
     }
+    
+    async function fetchUser() {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (session && !error) {
+        const { data } = await supabase.from('cliente').select('nombre, telefono').eq('email', session.user.email).single();
+        if (data) {
+          setFormData(prev => ({ ...prev, nombre: data.nombre, telefono: data.telefono }));
+          setIsAuthenticated(true);
+        }
+      }
+    }
+    
     fetchServices();
-  }, []);
+    fetchUser();
+  }, [supabase]);
+
+  useEffect(() => {
+    if (step === 2 && selectedService) {
+      setLoadingAvailability(true);
+      const start = format(dates[0], 'yyyy-MM-dd');
+      const end = format(dates[dates.length - 1], 'yyyy-MM-dd');
+      
+      fetch(`/api/availability?startDate=${start}&endDate=${end}`, { cache: 'no-store' })
+        .then(res => res.json())
+        .then(data => {
+          if (data.ocupacionesPorDia) {
+            setOcupacionesPorDia(data.ocupacionesPorDia);
+          }
+        })
+        .catch(err => console.error("Error fetching availability:", err))
+        .finally(() => setLoadingAvailability(false));
+    }
+  }, [step, selectedService]);
 
   const handleNext = () => {
     setErrorLine('');
@@ -114,9 +151,14 @@ export default function BookingForm() {
   };
 
   const handleWhatsAppRedirect = () => {
-     const phone = '573172137402'; // Replace with real business phone
-     const text = `¡Hola Generosita Spa! Acabo de reservar a través de la web.%0A%0A*Detalles de mi cita:*%0A👤 ${formData.nombre}%0A💅 Servicio: ${selectedService?.nombre}%0A📅 Fecha: ${selectedDate ? format(selectedDate, "dd 'de' MMMM", { locale: es }) : ''}%0A⏰ Hora: ${selectedTime}%0A%0APor favor, confirmen mi asistencia. 💜`;
-     window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
+    const phone = '573172137402'; // Replace with real business phone
+    const notasText = formData.notas ? `\n\u{1F4DD} *Notas para la especialista:* ${formData.notas}` : '';
+    
+    // Using Unicode Escapes for emojis and Spanish accents to bypass Windows File Encoding corruptions
+    const rawText = `\u{1F49C} \u00A1Hola equipo de Generosita Spa! \u{2728}\nAcabo de agendar una nueva cita desde la p\u00E1gina web y me gustar\u00EDa confirmarla.\n\n\u{1F485} *Servicio:* ${selectedService?.nombre || ''}\n\u{1F4C5} *Fecha:* ${selectedDate ? format(selectedDate, "dd 'de' MMMM", { locale: es }) : ''}\n\u{23F0} *Hora:* ${selectedTime}\n\u{1F464} *A nombre de:* ${formData.nombre}${notasText}\n\n\u00A1Quedo atenta a su confirmaci\u00F3n, much\u00EDsimas gracias! \u{1F970}`;
+
+    const encodedText = encodeURIComponent(rawText);
+    window.open(`https://wa.me/${phone}?text=${encodedText}`, '_blank');
   };
 
   return (
@@ -184,45 +226,79 @@ export default function BookingForm() {
           <div className="grid md:grid-cols-2 gap-8">
             <div>
               <h3 className="font-medium text-zinc-700 mb-3 flex items-center">
-                <CalendarIcon className="w-4 h-4 mr-2 text-brand" /> Días disponibles
+                <CalendarIcon className="w-4 h-4 mr-2 text-brand" /> Días disponibles {loadingAvailability && <span className="text-xs text-brand animate-pulse ml-2">Cargando...</span>}
               </h3>
               <div className="grid grid-cols-3 gap-2">
-                {dates.map((d, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setSelectedDate(d)}
-                    className={`py-3 px-2 rounded-xl border text-center transition-all ${
-                      selectedDate && isSameDay(d, selectedDate)
-                        ? 'bg-brand text-white border-brand shadow-md transform scale-[1.02]'
-                        : 'bg-white border-zinc-200 text-zinc-600 hover:border-brand-light'
-                    }`}
-                  >
-                    <div className="text-xs uppercase font-medium opacity-80">{format(d, 'EEE', { locale: es })}</div>
-                    <div className="text-lg font-bold">{format(d, 'd', { locale: es })}</div>
-                  </button>
-                ))}
+                {dates.map((d, i) => {
+                  const dateKey = format(d, 'yyyy-MM-dd');
+                  const dayOcupados = ocupacionesPorDia[dateKey] || [];
+                  
+                  // Verification: Check if all TIME_SLOTS overlap
+                  const isFullyBooked = dayOcupados.length > 0 && TIME_SLOTS.every(t => {
+                    const [h, m] = t.split(':').map(Number);
+                    const slotStart = h * 60 + m;
+                    const slotEnd = slotStart + (selectedService?.duracion || 60);
+                    return dayOcupados.some(o => slotStart < o.endMin && slotEnd > o.startMin);
+                  });
+
+                  return (
+                    <button
+                      key={i}
+                      disabled={isFullyBooked || loadingAvailability}
+                      onClick={() => { setSelectedDate(d); setSelectedTime(null); }}
+                      className={`py-3 px-2 rounded-xl border text-center transition-all ${
+                        isFullyBooked
+                          ? 'bg-zinc-100 text-zinc-400 border-zinc-100 cursor-not-allowed opacity-60'
+                          : selectedDate && isSameDay(d, selectedDate)
+                            ? 'bg-brand text-white border-brand shadow-md transform scale-[1.02]'
+                            : 'bg-white border-zinc-200 text-zinc-600 hover:border-brand-light'
+                      }`}
+                    >
+                      <div className="text-xs uppercase font-medium opacity-80">{format(d, 'EEE', { locale: es })}</div>
+                      <div className="text-lg font-bold">{format(d, 'd', { locale: es })}</div>
+                      {isFullyBooked && <div className="text-[9px] uppercase font-bold tracking-wider mt-1">Agotado</div>}
+                    </button>
+                  );
+                })}
               </div>
             </div>
             
             <div>
               <h3 className="font-medium text-zinc-700 mb-3 flex items-center">
-                <Clock className="w-4 h-4 mr-2 text-brand" /> Horas disponibles
+                <Clock className="w-4 h-4 mr-2 text-brand" /> Horas disponibles {loadingAvailability && <span className="text-xs text-brand animate-pulse ml-2">Cargando...</span>}
               </h3>
               {selectedDate ? (
                 <div className="grid grid-cols-2 gap-2">
-                  {TIME_SLOTS.map(t => (
-                    <button
-                      key={t}
-                      onClick={() => setSelectedTime(t)}
-                      className={`py-3 px-4 rounded-xl border text-center transition-all ${
-                        selectedTime === t
-                          ? 'bg-brand-dark text-white border-brand-dark shadow-md'
-                          : 'bg-white border-zinc-200 text-zinc-700 hover:border-brand-light'
-                      }`}
-                    >
-                      {t}
-                    </button>
-                  ))}
+                  {TIME_SLOTS.map(t => {
+                    const [h, m] = t.split(':').map(Number);
+                    const slotStart = h * 60 + m;
+                    const slotEnd = slotStart + (selectedService?.duracion || 60);
+                    const dateKey = format(selectedDate, 'yyyy-MM-dd');
+                    const dayOcupados = ocupacionesPorDia[dateKey] || [];
+                    
+                    // Overlap logic: proposed Start is before occupied End AND proposed End is after occupied Start
+                    const isOccupied = dayOcupados.some(o => slotStart < o.endMin && slotEnd > o.startMin);
+                    
+                    return (
+                      <button
+                        key={t}
+                        disabled={isOccupied || loadingAvailability}
+                        onClick={() => setSelectedTime(t)}
+                        className={`py-3 px-4 rounded-xl border text-center transition-all ${
+                          isOccupied
+                            ? 'bg-zinc-100 text-zinc-400 border-zinc-100 cursor-not-allowed opacity-60'
+                            : selectedTime === t
+                              ? 'bg-brand-dark text-white border-brand-dark shadow-md'
+                              : 'bg-white border-zinc-200 text-zinc-700 hover:border-brand-light'
+                        }`}
+                      >
+                        <div className="flex items-center justify-center gap-2">
+                          {t}
+                          {isOccupied && <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Ocupado</span>}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="h-full min-h-[200px] flex items-center justify-center border-2 border-dashed border-zinc-200 rounded-2xl bg-zinc-50">
@@ -253,39 +329,66 @@ export default function BookingForm() {
                </div>
             </div>
 
-            <form id="booking-form" onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-zinc-700 mb-1">Nombre Completo *</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-zinc-400" />
+            <form 
+              id="booking-form" 
+              onSubmit={handleSubmit} 
+              onKeyDown={(e) => { 
+                if (e.key === 'Enter' && (e.target as HTMLElement).tagName !== 'TEXTAREA') { 
+                  e.preventDefault(); 
+                } 
+              }}
+              className="space-y-4">
+              {isAuthenticated ? (
+                <div className="bg-white p-5 rounded-xl border border-zinc-200 flex items-center justify-between shadow-sm">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-brand-light/30 text-brand rounded-full flex items-center justify-center font-bold text-xl uppercase">
+                      {formData.nombre.charAt(0) || 'U'}
+                    </div>
+                    <div>
+                      <p className="font-bold text-zinc-800">{formData.nombre}</p>
+                      <p className="text-sm text-zinc-500 font-medium mt-0.5">{formData.telefono}</p>
+                    </div>
                   </div>
-                  <input
-                    required
-                    type="text"
-                    value={formData.nombre}
-                    onChange={(e) => setFormData({...formData, nombre: e.target.value})}
-                    className="block w-full pl-10 pr-3 py-3 border border-zinc-200 rounded-xl focus:ring-brand focus:border-brand bg-zinc-50 focus:bg-white transition-colors outline-none text-brand-dark font-medium"
-                    placeholder="Ej. Camila Pérez"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-zinc-700 mb-1">WhatsApp / Teléfono *</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Phone className="h-5 w-5 text-zinc-400" />
+                  <div className="bg-green-100 text-green-600 p-2 rounded-full hidden sm:block">
+                    <CheckCircle2 className="w-5 h-5" />
                   </div>
-                  <input
-                    required
-                    type="tel"
-                    value={formData.telefono}
-                    onChange={(e) => setFormData({...formData, telefono: e.target.value})}
-                    className="block w-full pl-10 pr-3 py-3 border border-zinc-200 rounded-xl focus:ring-brand focus:border-brand bg-zinc-50 focus:bg-white transition-colors outline-none text-brand-dark font-medium"
-                    placeholder="Para confirmar tu cita"
-                  />
                 </div>
-              </div>
+              ) : (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-700 mb-1">Nombre Completo *</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <User className="h-5 w-5 text-zinc-400" />
+                      </div>
+                      <input
+                        required
+                        type="text"
+                        value={formData.nombre}
+                        onChange={(e) => setFormData({...formData, nombre: e.target.value})}
+                        className="block w-full pl-10 pr-3 py-3 border border-zinc-200 rounded-xl focus:ring-brand focus:border-brand bg-zinc-50 focus:bg-white transition-colors outline-none text-brand-dark font-medium"
+                        placeholder="Ej. Camila Pérez"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-700 mb-1">WhatsApp / Teléfono *</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Phone className="h-5 w-5 text-zinc-400" />
+                      </div>
+                      <input
+                        required
+                        type="tel"
+                        value={formData.telefono}
+                        onChange={(e) => setFormData({...formData, telefono: e.target.value})}
+                        className="block w-full pl-10 pr-3 py-3 border border-zinc-200 rounded-xl focus:ring-brand focus:border-brand bg-zinc-50 focus:bg-white transition-colors outline-none text-brand-dark font-medium"
+                        placeholder="Para confirmar tu cita"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
               <div>
                 <label className="block text-sm font-medium text-zinc-700 mb-1">Notas para la especialista (opcional)</label>
                 <textarea

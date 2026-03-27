@@ -1,10 +1,12 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["public"]
 }
 
 model cliente {
@@ -17,6 +19,8 @@ model cliente {
   created_at DateTime? @default(now()) @db.Timestamptz
   citas      cita[]
   resenas    resena[]
+
+  @@schema("public")
 }
 
 model servicio {
@@ -26,6 +30,8 @@ model servicio {
   duracion   Int
   created_at DateTime? @default(now()) @db.Timestamptz
   citas      cita[]
+
+  @@schema("public")
 }
 
 model empleado {
@@ -35,6 +41,8 @@ model empleado {
   activo     Boolean?  @default(true)
   created_at DateTime? @default(now()) @db.Timestamptz
   citas      cita[]
+
+  @@schema("public")
 }
 
 model horario {
@@ -43,12 +51,17 @@ model horario {
   hora_inicio DateTime @db.Time
   hora_fin    DateTime @db.Time
   activo      Boolean? @default(true)
+
+  @@schema("public")
 }
 
 model estado_cita {
   id     Int    @id @default(autoincrement())
   nombre String @unique
   citas  cita[]
+
+  @@map("estados_cita")
+  @@schema("public")
 }
 
 model cita {
@@ -70,6 +83,7 @@ model cita {
   @@unique([fecha, hora], map: "cita_fecha_hora_unique")
   @@index([fecha], map: "idx_cita_fecha")
   @@index([cliente_id], map: "idx_cita_cliente")
+  @@schema("public")
 }
 
 model galeria {
@@ -77,6 +91,8 @@ model galeria {
   imagen_url  String
   descripcion String?
   created_at  DateTime? @default(now()) @db.Timestamptz
+
+  @@schema("public")
 }
 
 model resena {
@@ -87,4 +103,6 @@ model resena {
   created_at   DateTime? @default(now()) @db.Timestamptz
 
   cliente cliente? @relation(fields: [cliente_id], references: [id], map: "fk_resena_cliente")
+
+  @@schema("public")
 }
