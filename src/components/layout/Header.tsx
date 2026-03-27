@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { CalendarHeart, User, ShieldCheck } from 'lucide-react';
 import { createClient } from '@/utils/supabase/server';
 import { prisma } from '@/lib/prisma';
+import MobileMenu from './MobileMenu';
 
 export default async function Header() {
   const supabase = await createClient();
@@ -23,7 +24,7 @@ export default async function Header() {
     <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-xl border-b border-purple-100/50 shadow-sm transition-all duration-300">
       <div className="container mx-auto px-4 lg:px-8 h-20 flex items-center justify-between">
         
-        {/* Lado Izquierdo: Logo */}
+        {/* Logo */}
         <Link href="/" className="flex items-center group">
           <div className="relative w-14 h-14 transition-transform duration-300 group-hover:scale-105">
             <Image
@@ -40,7 +41,7 @@ export default async function Header() {
           </div>
         </Link>
 
-        {/* Centro: Nav Links Desktop */}
+        {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6 lg:gap-8">
           <Link href="/" className="text-sm font-semibold text-purple-900/70 hover:text-brand transition-colors relative group py-2">
             Inicio
@@ -56,7 +57,7 @@ export default async function Header() {
           </Link>
         </nav>
 
-        {/* Lado Derecho: Acciones Desktop */}
+        {/* Desktop Actions */}
         <div className="hidden md:flex items-center gap-4 lg:gap-6">
           {user && isAdmin && (
             <Link href="/admin" className="text-sm font-bold text-brand hover:text-brand-dark transition-colors flex items-center gap-2 group hidden xl:flex">
@@ -90,12 +91,8 @@ export default async function Header() {
           </Link>
         </div>
 
-        {/* Botón Menu Mobile */}
-        <button className="md:hidden p-2 text-brand hover:bg-brand-light/20 rounded-lg transition-colors flex items-center">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
+        {/* Mobile Menu (interactive client component) */}
+        <MobileMenu isLoggedIn={!!user} isAdmin={isAdmin} />
       </div>
     </header>
   );
