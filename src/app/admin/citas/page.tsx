@@ -114,12 +114,12 @@ export default function CitasAdmin() {
   };
 
   // Cliente Autocomplete Handler
-  const handleClientSelect = (telefono: string) => {
-    const c = clientes.find(x => x.telefono === telefono);
+  const handleNameSelect = (nombre: string) => {
+    const c = clientes.find(x => x.nombre === nombre);
     if (c) {
-      setNewCita({ ...newCita, telefono: c.telefono, nombre: c.nombre });
+      setNewCita({ ...newCita, nombre: c.nombre, telefono: c.telefono });
     } else {
-      setNewCita({ ...newCita, telefono });
+      setNewCita({ ...newCita, nombre });
     }
   };
 
@@ -290,32 +290,32 @@ export default function CitasAdmin() {
               
               <form id="new-booking-form" onSubmit={submitNewCita} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-zinc-700 mb-1">Teléfono (WhatsApp)</label>
-                  <input
-                    type="tel"
-                    required
-                    list="clientes-list"
-                    value={newCita.telefono}
-                    onChange={e => handleClientSelect(e.target.value)}
-                    className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand focus:border-brand outline-none"
-                    placeholder="Busca o escribe un número..."
-                  />
-                  <datalist id="clientes-list">
-                    {clientes.map(c => (
-                      <option key={c.id} value={c.telefono}>{c.nombre}</option>
-                    ))}
-                  </datalist>
-                </div>
-                
-                <div>
                   <label className="block text-sm font-semibold text-zinc-700 mb-1">Nombre del Cliente</label>
                   <input
                     type="text"
                     required
+                    list="clientes-names-list"
                     value={newCita.nombre}
-                    onChange={e => setNewCita(c => ({...c, nombre: e.target.value}))}
+                    onChange={e => handleNameSelect(e.target.value)}
                     className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand focus:border-brand outline-none"
-                    placeholder="Nombre completo"
+                    placeholder="Busca o escribe un nombre..."
+                  />
+                  <datalist id="clientes-names-list">
+                    {clientes.map(c => (
+                      <option key={c.id} value={c.nombre}>{c.telefono}</option>
+                    ))}
+                  </datalist>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-zinc-700 mb-1">Teléfono (WhatsApp)</label>
+                  <input
+                    type="tel"
+                    required
+                    value={newCita.telefono}
+                    onChange={e => setNewCita(c => ({...c, telefono: e.target.value}))}
+                    className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand focus:border-brand outline-none"
+                    placeholder="Número telefónico"
                   />
                 </div>
 
