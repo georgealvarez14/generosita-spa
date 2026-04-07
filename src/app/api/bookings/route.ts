@@ -107,8 +107,8 @@ export async function GET(req: Request) {
         servicio: true,
       },
       orderBy: [
-        { fecha: 'asc' },
-        { hora: 'asc' }
+        { fecha: 'desc' },
+        { hora: 'desc' }
       ]
     });
     
