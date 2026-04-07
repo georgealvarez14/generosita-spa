@@ -46,7 +46,7 @@ function EventCard({ event }: { event: CalendarEvent }) {
       <p className="font-bold truncate text-white text-[11px]">{event.resource.cliente.nombre}</p>
       <p className="truncate text-white/90 text-[10px]">{event.resource.servicio.nombre}</p>
       {dur >= 45 && (
-        <p className="text-white/75 text-[10px]">{format(event.start, 'HH:mm')} · ${event.resource.servicio.precio.toLocaleString()}</p>
+        <p className="text-white/75 text-[10px]">{format(event.start, 'hh:mm a')} · ${event.resource.servicio.precio.toLocaleString()}</p>
       )}
     </div>
   );
@@ -159,7 +159,7 @@ export default function AdminCalendar({ citas }: Props) {
           month: { 
             event: ({ event }) => (
               <div className="truncate text-[10px] leading-none whitespace-nowrap">
-               <span className="opacity-75 mr-1">{format((event as CalendarEvent).start, 'HH:mm')}</span>
+               <span className="opacity-75 mr-1">{format((event as CalendarEvent).start, 'hh:mm a')}</span>
                <span className="font-bold">{(event as CalendarEvent).resource.cliente.nombre}</span>
               </div>
             )
@@ -222,7 +222,7 @@ export default function AdminCalendar({ citas }: Props) {
                     <Clock className="w-3 h-3" /> Horario
                   </p>
                   <p className="font-bold text-zinc-800 capitalize">{format(selectedEvent.start, "EEEE d", { locale: es })}</p>
-                  <p className="text-brand-dark font-bold mt-1">{format(selectedEvent.start, "HH:mm")} — {format(selectedEvent.end, "HH:mm")}</p>
+                  <p className="text-brand-dark font-bold mt-1">{format(selectedEvent.start, "hh:mm a")} — {format(selectedEvent.end, "hh:mm a")}</p>
                   <p className="text-zinc-400 text-xs mt-0.5">
                     {selectedEvent.resource.estado_id === 1 ? '🟡 Pendiente' : '🟢 Confirmada'}
                   </p>
@@ -248,7 +248,7 @@ export default function AdminCalendar({ citas }: Props) {
               </button>
               <a
                 href={`https://wa.me/${selectedEvent.resource.cliente.telefono}?text=${encodeURIComponent(
-                  `Hola ${selectedEvent.resource.cliente.nombre} 💜 Te recordamos tu cita en Generosita SPA el ${format(selectedEvent.start, "dd 'de' MMMM", { locale: es })} a las ${format(selectedEvent.start, "HH:mm")} para tu ${selectedEvent.resource.servicio.nombre}. ¡Te esperamos!`
+                  `Hola ${selectedEvent.resource.cliente.nombre} 💜 Te recordamos tu cita en Generosita SPA el ${format(selectedEvent.start, "dd 'de' MMMM", { locale: es })} a las ${format(selectedEvent.start, "hh:mm a")} para tu ${selectedEvent.resource.servicio.nombre}. ¡Te esperamos!`
                 )}`}
                 target="_blank"
                 className="inline-flex items-center gap-2 bg-[#25D366] text-white font-bold px-5 py-2 rounded-xl hover:bg-[#20b958] transition shadow-md shadow-[#25D366]/20 text-sm"

@@ -14,6 +14,13 @@ const TIME_SLOTS = [
   "14:00", "15:00", "16:00", "17:00", "18:00"
 ];
 
+const formatTime12h = (time: string) => {
+  const [h, m] = time.split(':').map(Number);
+  const period = h >= 12 ? 'PM' : 'AM';
+  const hour12 = h % 12 || 12;
+  return `${hour12}:${m.toString().padStart(2, '0')} ${period}`;
+};
+
 // 5 days from today
 const getAvailableDates = () => {
   const dates = [];
@@ -155,7 +162,7 @@ export default function BookingForm() {
     const notasText = formData.notas ? `\n\u{1F4DD} *Notas para la especialista:* ${formData.notas}` : '';
     
     // Using Unicode Escapes for emojis and Spanish accents to bypass Windows File Encoding corruptions
-    const rawText = `\u{1F49C} \u00A1Hola equipo de Generosita Spa! \u{2728}\nAcabo de agendar una nueva cita desde la p\u00E1gina web y me gustar\u00EDa confirmarla.\n\n\u{1F485} *Servicio:* ${selectedService?.nombre || ''}\n\u{1F4C5} *Fecha:* ${selectedDate ? format(selectedDate, "dd 'de' MMMM", { locale: es }) : ''}\n\u{23F0} *Hora:* ${selectedTime}\n\u{1F464} *A nombre de:* ${formData.nombre}${notasText}\n\n\u00A1Quedo atenta a su confirmaci\u00F3n, much\u00EDsimas gracias! \u{1F970}`;
+    const rawText = `\u{1F49C} \u00A1Hola equipo de Generosita Spa! \u{2728}\nAcabo de agendar una nueva cita desde la p\u00E1gina web y me gustar\u00EDa confirmarla.\n\n\u{1F485} *Servicio:* ${selectedService?.nombre || ''}\n\u{1F4C5} *Fecha:* ${selectedDate ? format(selectedDate, "dd 'de' MMMM", { locale: es }) : ''}\n\u{23F0} *Hora:* ${selectedTime ? formatTime12h(selectedTime) : ''}\n\u{1F464} *A nombre de:* ${formData.nombre}${notasText}\n\n\u00A1Quedo atenta a su confirmaci\u00F3n, much\u00EDsimas gracias! \u{1F970}`;
 
     const encodedText = encodeURIComponent(rawText);
     window.open(`https://wa.me/${phone}?text=${encodedText}`, '_blank');
@@ -293,7 +300,7 @@ export default function BookingForm() {
                         }`}
                       >
                         <div className="flex items-center justify-center gap-2">
-                          {t}
+                          {formatTime12h(t)}
                           {isOccupied && <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Ocupado</span>}
                         </div>
                       </button>
@@ -320,7 +327,7 @@ export default function BookingForm() {
                  <p className="text-brand-dark font-bold text-lg">{selectedService?.nombre}</p>
                  <p className="text-zinc-600 text-sm flex items-center gap-1 mt-1">
                    <CalendarIcon className="w-3.5 h-3.5 shadow" /> 
-                   {selectedDate && format(selectedDate, "eeee, dd 'de' MMMM", { locale: es })} a las {selectedTime}
+                   {selectedDate && format(selectedDate, "eeee, dd 'de' MMMM", { locale: es })} a las {selectedTime ? formatTime12h(selectedTime) : ''}
                  </p>
                </div>
                <div className="text-right">
@@ -420,7 +427,7 @@ export default function BookingForm() {
                <div>
                  <p className="text-sm text-zinc-500 font-medium">Cuándo</p>
                  <p className="font-bold text-zinc-800">{selectedDate && format(selectedDate, "PPPP", { locale: es })}</p>
-                 <p className="text-brand font-bold">{selectedTime}</p>
+                 <p className="text-brand font-bold">{selectedTime ? formatTime12h(selectedTime) : ''}</p>
                </div>
              </div>
              <div className="flex gap-4 items-start border-t border-zinc-200 pt-4">

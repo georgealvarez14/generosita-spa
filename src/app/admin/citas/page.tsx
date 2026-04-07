@@ -3,13 +3,16 @@
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale/es';
-import { CalendarDays, Clock, Phone, Pencil, Trash2, CheckCircle2, XCircle, AlertCircle, Loader2, Plus } from 'lucide-react';
+import { CalendarDays, Clock, Phone, Pencil, Trash2, CheckCircle2, XCircle, Loader2, Plus, X } from 'lucide-react';
 
 type Cita = {
   id: string; fecha: string; hora: string; estado_id: number; notas: string | null;
   cliente: { nombre: string; telefono: string };
-  servicio: { nombre: string; precio: number; duracion: number };
+  servicio: { id: string; nombre: string; precio: number; duracion: number };
 };
+
+type Cliente = { id: string; nombre: string; telefono: string; email: string | null };
+type Servicio = { id: string; nombre: string; precio: number; duracion: number };
 
 const ESTADOS = [
   { id: 1, label: 'Pendiente', cls: 'bg-amber-100 text-amber-700' },
@@ -17,6 +20,19 @@ const ESTADOS = [
   { id: 3, label: 'Completada', cls: 'bg-green-100 text-green-700' },
   { id: 4, label: 'Cancelada', cls: 'bg-red-100 text-red-600' },
 ];
+
+const TIME_SLOTS = [
+  "09:00", "10:00", "11:00", "12:00", "13:00", 
+  "14:00", "15:00", "16:00", "17:00", "18:00"
+];
+
+const formatTime12h = (time: string) => {
+  if (!time) return '';
+  const [h, m] = time.split(':').map(Number);
+  const period = h >= 12 ? 'PM' : 'AM';
+  const hour12 = h % 12 || 12;
+  return `${hour12}:${m.toString().padStart(2, '0')} ${period}`;
+};
 
 export default function CitasAdmin() {
   const [citas, setCitas] = useState<Cita[]>([]);
@@ -27,6 +43,14 @@ export default function CitasAdmin() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [filter, setFilter] = useState<number | 'all'>('all');
 
+  // Nueva cita states
+  const [isCreating, setIsCreating] = useState(false);
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [servicios, setServicios] = useState<Servicio[]>([]);
+  const [newCita, setNewCita] = useState({ nombre: '', telefono: '', fecha: '', hora: '09:00', servicioId: '', notas: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [createError, setCreateError] = useState('');
+
   const load = () => {
     setLoading(true);
     fetch('/api/bookings?all=true')
@@ -34,7 +58,13 @@ export default function CitasAdmin() {
       .then(d => setCitas(Array.isArray(d) ? d : []))
       .finally(() => setLoading(false));
   };
-  useEffect(load, []);
+  
+  useEffect(() => {
+    load();
+    // Preload clients and services for the modal
+    fetch('/api/clientes').then(r => r.json()).then(setClientes).catch(console.error);
+    fetch('/api/services').then(r => r.json()).then(setServicios).catch(console.error);
+  }, []);
 
   const startEdit = (cita: Cita) => {
     setEditingId(cita.id);
@@ -61,10 +91,42 @@ export default function CitasAdmin() {
     setCitas(prev => prev.filter(c => c.id !== id));
   };
 
+  const submitNewCita = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreateError('');
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newCita)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al crear cita');
+      setIsCreating(false);
+      setNewCita({ nombre: '', telefono: '', fecha: '', hora: '09:00', servicioId: '', notas: '' });
+      load();
+    } catch (err: any) {
+      setCreateError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Cliente Autocomplete Handler
+  const handleClientSelect = (telefono: string) => {
+    const c = clientes.find(x => x.telefono === telefono);
+    if (c) {
+      setNewCita({ ...newCita, telefono: c.telefono, nombre: c.nombre });
+    } else {
+      setNewCita({ ...newCita, telefono });
+    }
+  };
+
   const filtered = filter === 'all' ? citas : citas.filter(c => c.estado_id === filter);
 
   const formatHora = (h: string) => typeof h === 'string' && h.includes('T')
-    ? new Date(h).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+    ? new Date(h).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: true })
     : h;
 
   return (
@@ -74,17 +136,27 @@ export default function CitasAdmin() {
           <h1 className="text-2xl font-bold font-outfit text-zinc-800">Gestión de Citas</h1>
           <p className="text-zinc-400 text-sm">{citas.length} cita{citas.length !== 1 ? 's' : ''} en total</p>
         </div>
-        {/* Filter tabs */}
-        <div className="flex flex-wrap gap-2">
-          {[{ id: 'all', label: 'Todas' }, ...ESTADOS].map(e => (
-            <button
-              key={e.id}
-              onClick={() => setFilter(e.id as any)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                filter === e.id ? 'bg-brand text-white border-brand shadow' : 'bg-white text-zinc-600 border-zinc-200 hover:border-brand-light'
-              }`}
-            >{e.label}</button>
-          ))}
+        
+        <div className="flex flex-wrap gap-2 items-center">
+          {/* Filter tabs */}
+          <div className="flex bg-white rounded-lg border border-zinc-200 p-1 mr-2">
+            {[{ id: 'all', label: 'Todas' }, ...ESTADOS].map(e => (
+              <button
+                key={e.id}
+                onClick={() => setFilter(e.id as any)}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                  filter === e.id ? 'bg-brand text-white shadow-sm' : 'text-zinc-500 hover:bg-zinc-50'
+                }`}
+              >{e.label}</button>
+            ))}
+          </div>
+          
+          <button 
+            onClick={() => setIsCreating(true)}
+            className="flex items-center gap-1.5 bg-brand hover:bg-brand-dark text-white px-4 py-2 rounded-lg font-bold text-sm shadow-md transition-all"
+          >
+            <Plus className="w-4 h-4" /> Nueva Cita
+          </button>
         </div>
       </div>
 
@@ -194,6 +266,132 @@ export default function CitasAdmin() {
                 })}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Nueva Cita */}
+      {isCreating && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="px-6 py-4 border-b border-zinc-100 flex justify-between items-center bg-zinc-50">
+              <h3 className="font-bold text-lg text-zinc-800">Nueva Reserva Admin</h3>
+              <button type="button" onClick={() => setIsCreating(false)} className="text-zinc-400 hover:text-zinc-600 p-1 rounded-full hover:bg-zinc-200">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto">
+              {createError && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl">
+                  {createError}
+                </div>
+              )}
+              
+              <form id="new-booking-form" onSubmit={submitNewCita} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-zinc-700 mb-1">Teléfono (WhatsApp)</label>
+                  <input
+                    type="tel"
+                    required
+                    list="clientes-list"
+                    value={newCita.telefono}
+                    onChange={e => handleClientSelect(e.target.value)}
+                    className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand focus:border-brand outline-none"
+                    placeholder="Busca o escribe un número..."
+                  />
+                  <datalist id="clientes-list">
+                    {clientes.map(c => (
+                      <option key={c.id} value={c.telefono}>{c.nombre}</option>
+                    ))}
+                  </datalist>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-semibold text-zinc-700 mb-1">Nombre del Cliente</label>
+                  <input
+                    type="text"
+                    required
+                    value={newCita.nombre}
+                    onChange={e => setNewCita(c => ({...c, nombre: e.target.value}))}
+                    className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand focus:border-brand outline-none"
+                    placeholder="Nombre completo"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-zinc-700 mb-1">Fecha</label>
+                    <input
+                      type="date"
+                      required
+                      value={newCita.fecha}
+                      min={new Date().toISOString().split('T')[0]}
+                      onChange={e => setNewCita(c => ({...c, fecha: e.target.value}))}
+                      className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand focus:border-brand outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-zinc-700 mb-1">Hora</label>
+                    <select
+                      required
+                      value={newCita.hora}
+                      onChange={e => setNewCita(c => ({...c, hora: e.target.value}))}
+                      className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand focus:border-brand outline-none"
+                    >
+                      {TIME_SLOTS.map(t => (
+                        <option key={t} value={t}>{formatTime12h(t)}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-zinc-700 mb-1">Servicio</label>
+                  <select
+                    required
+                    value={newCita.servicioId}
+                    onChange={e => setNewCita(c => ({...c, servicioId: e.target.value}))}
+                    className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand focus:border-brand outline-none"
+                  >
+                    <option value="" disabled>Selecciona un servicio</option>
+                    {servicios.map(s => (
+                      <option key={s.id} value={s.id}>{s.nombre} (${s.precio.toLocaleString()} - {s.duracion} min)</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-zinc-700 mb-1">Notas especiales</label>
+                  <textarea
+                    value={newCita.notas}
+                    onChange={e => setNewCita(c => ({...c, notas: e.target.value}))}
+                    className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand focus:border-brand outline-none resize-none"
+                    rows={2}
+                    placeholder="Opcional..."
+                  />
+                </div>
+              </form>
+            </div>
+            
+            <div className="px-6 py-4 border-t border-zinc-100 bg-zinc-50 flex justify-end gap-3 shrink-0">
+              <button 
+                type="button" 
+                onClick={() => setIsCreating(false)}
+                className="px-5 py-2.5 rounded-xl font-semibold text-zinc-600 hover:bg-zinc-200 transition-colors cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button 
+                form="new-booking-form"
+                type="submit" 
+                disabled={isSubmitting}
+                className="px-5 py-2.5 rounded-xl font-bold bg-brand text-white hover:bg-brand-dark transition-all disabled:opacity-50 flex items-center gap-2 cursor-pointer"
+              >
+                {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                {isSubmitting ? 'Guardando...' : 'Crear Reserva'}
+              </button>
+            </div>
           </div>
         </div>
       )}
