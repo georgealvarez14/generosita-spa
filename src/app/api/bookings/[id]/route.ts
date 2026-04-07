@@ -9,13 +9,18 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await req.json();
-    const { estado_id, notas } = body;
+    const { estado_id, notas, precio_ajustado } = body;
+
+    const precioParsed = precio_ajustado === '' || precio_ajustado === null || isNaN(Number(precio_ajustado)) 
+      ? null 
+      : Number(precio_ajustado);
 
     const updated = await (prisma.cita as any).update({
       where: { id },
       data: {
         ...(estado_id !== undefined && { estado_id }),
         ...(notas !== undefined && { notas }),
+        ...(precio_ajustado !== undefined && { precio_ajustado: precioParsed }),
       },
       include: { cliente: true, servicio: true },
     });

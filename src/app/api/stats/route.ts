@@ -24,12 +24,31 @@ export async function GET() {
       prisma.servicio.findMany({ select: { precio: true } }),
     ]);
 
-    // Estimated revenue: sum of service prices ONLY for confirmed bookings (estado_id = 2)
-    const citasConfirmadasConPrecio = await (prisma.cita as any).findMany({
-      where: { estado_id: 2 },
+    // Estimated revenue: sum of prices for non-cancelled bookings (estado_id !== 3)
+    const citasParaIngresos = await (prisma.cita as any).findMany({
+      where: { estado_id: { not: 3 } },
       include: { servicio: { select: { precio: true } } },
     });
-    const ingresoEstimado = citasConfirmadasConPrecio.reduce((sum: number, c: any) => sum + (c.servicio?.precio ?? 0), 0);
+
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const weekStart = new Date(todayStart);
+    weekStart.setDate(weekStart.getDate() - (weekStart.getDay() || 7) + 1); // Monday
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const ingresos = { hoy: 0, semana: 0, mes: 0 };
+
+    citasParaIngresos.forEach((c: any) => {
+      const d = new Date(c.fecha);
+      d.setHours(0,0,0,0);
+      const precioFinal = c.precio_ajustado !== null && c.precio_ajustado !== undefined 
+        ? c.precio_ajustado 
+        : (c.servicio?.precio ?? 0);
+
+      if (d.getTime() === todayStart.getTime()) ingresos.hoy += precioFinal;
+      if (d >= weekStart) ingresos.semana += precioFinal;
+      if (d >= monthStart) ingresos.mes += precioFinal;
+    });
 
     return NextResponse.json({
       totalCitas,
@@ -37,7 +56,7 @@ export async function GET() {
       pendientes,
       totalClientes,
       totalServicios,
-      ingresoEstimado,
+      ingresos,
     });
   } catch (error) {
     console.error(error);

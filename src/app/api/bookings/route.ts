@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { nombre, telefono, email, fecha, hora, servicioId, notas } = body;
+    const { nombre, telefono, email, fecha, hora, servicioId, notas, precio_ajustado } = body;
 
     if (!nombre || !telefono || !fecha || !hora || !servicioId) {
       return NextResponse.json({ error: 'Faltan campos obligatorios' }, { status: 400 });
@@ -71,6 +71,7 @@ export async function POST(req: Request) {
         servicio_id: servicioId,
         cliente_id: cliente.id,
         notas: notas || null,
+        precio_ajustado: isNaN(Number(precio_ajustado)) ? null : Number(precio_ajustado),
         estado_id: 1, // 1 = pendiente en estado_cita
       },
       include: {

@@ -7,7 +7,7 @@ import { CalendarDays, Clock, Phone, Pencil, Trash2, CheckCircle2, XCircle, Load
 import { FadeInOnLoad, StaggerContainerOnLoad, StaggerItem } from "@/components/ui/Animations";
 
 type Cita = {
-  id: string; fecha: string; hora: string; estado_id: number; notas: string | null;
+  id: string; fecha: string; hora: string; estado_id: number; notas: string | null; precio_ajustado: number | null;
   cliente: { nombre: string; telefono: string };
   servicio: { id: string; nombre: string; precio: number; duracion: number };
 };
@@ -39,7 +39,7 @@ export default function CitasAdmin() {
   const [citas, setCitas] = useState<Cita[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editData, setEditData] = useState<{ estado_id: number; notas: string }>({ estado_id: 1, notas: '' });
+  const [editData, setEditData] = useState<{ estado_id: number; notas: string; precio_ajustado: string }>({ estado_id: 1, notas: '', precio_ajustado: '' });
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [filter, setFilter] = useState<number | 'all'>('all');
@@ -48,7 +48,7 @@ export default function CitasAdmin() {
   const [isCreating, setIsCreating] = useState(false);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [servicios, setServicios] = useState<Servicio[]>([]);
-  const [newCita, setNewCita] = useState({ nombre: '', telefono: '', fecha: '', hora: '09:00', servicioId: '', notas: '' });
+  const [newCita, setNewCita] = useState({ nombre: '', telefono: '', fecha: '', hora: '09:00', servicioId: '', notas: '', precio_ajustado: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createError, setCreateError] = useState('');
 
@@ -69,7 +69,7 @@ export default function CitasAdmin() {
 
   const startEdit = (cita: Cita) => {
     setEditingId(cita.id);
-    setEditData({ estado_id: cita.estado_id, notas: cita.notas || '' });
+    setEditData({ estado_id: cita.estado_id, notas: cita.notas || '', precio_ajustado: cita.precio_ajustado ? cita.precio_ajustado.toString() : '' });
   };
 
   const saveEdit = async (id: string) => {
@@ -105,7 +105,7 @@ export default function CitasAdmin() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al crear cita');
       setIsCreating(false);
-      setNewCita({ nombre: '', telefono: '', fecha: '', hora: '09:00', servicioId: '', notas: '' });
+      setNewCita({ nombre: '', telefono: '', fecha: '', hora: '09:00', servicioId: '', notas: '', precio_ajustado: '' });
       load();
     } catch (err: any) {
       setCreateError(err.message);
@@ -218,17 +218,34 @@ export default function CitasAdmin() {
                     </div>
                     <div className="flex items-center justify-between mt-1">
                        <p className="font-semibold text-brand-dark text-sm">{cita.servicio.nombre}</p>
-                       <p className="text-xs text-zinc-500 font-medium">${cita.servicio.precio.toLocaleString()} / {cita.servicio.duracion}m</p>
+                       <p className="text-xs text-zinc-500 font-medium text-right">
+                         <span className={cita.precio_ajustado !== null ? 'line-through text-zinc-400 mr-1' : ''}>
+                           ${cita.servicio.precio.toLocaleString()}
+                         </span>
+                         {cita.precio_ajustado !== null && (
+                           <span className="text-brand font-bold bg-brand/10 px-1 py-0.5 rounded ml-1">${cita.precio_ajustado.toLocaleString()}</span>
+                         )}
+                         <span className="ml-1">· {cita.servicio.duracion}m</span>
+                       </p>
                     </div>
                   </div>
 
                   {isEditing ? (
-                    <input
-                      value={editData.notas}
-                      onChange={e => setEditData(d => ({ ...d, notas: e.target.value }))}
-                      className="text-sm border border-zinc-200 rounded-xl px-3 py-2 w-full text-zinc-700 shadow-sm"
-                      placeholder="Notas especiales..."
-                    />
+                    <div className="grid grid-cols-2 gap-2">
+                       <input
+                         value={editData.precio_ajustado}
+                         onChange={e => setEditData(d => ({ ...d, precio_ajustado: e.target.value }))}
+                         className="text-sm border border-zinc-200 rounded-xl px-3 py-2 w-full text-zinc-700 shadow-sm"
+                         placeholder={`Precio: $${cita.servicio.precio}`}
+                         type="number"
+                       />
+                       <input
+                         value={editData.notas}
+                         onChange={e => setEditData(d => ({ ...d, notas: e.target.value }))}
+                         className="text-sm border border-zinc-200 rounded-xl px-3 py-2 w-full text-zinc-700 shadow-sm"
+                         placeholder="Notas especiales..."
+                       />
+                    </div>
                   ) : (
                     cita.notas && (
                       <p className="text-sm text-zinc-600 bg-amber-50/50 border border-amber-100 p-2.5 rounded-xl">
@@ -294,7 +311,24 @@ export default function CitasAdmin() {
                       </td>
                       <td className="px-5 py-3.5">
                         <p className="font-medium text-brand-dark">{cita.servicio.nombre}</p>
-                        <p className="text-xs text-zinc-400">${cita.servicio.precio.toLocaleString()} · {cita.servicio.duracion} min</p>
+                        <p className="text-xs text-zinc-400">
+                          {isEditing ? (
+                            <input
+                              type="number"
+                              value={editData.precio_ajustado}
+                              onChange={e => setEditData(d => ({ ...d, precio_ajustado: e.target.value }))}
+                              placeholder={`$${cita.servicio.precio}`}
+                              className="w-20 px-1.5 py-1 border border-zinc-200 rounded text-xs mt-1 bg-white"
+                            />
+                          ) : cita.precio_ajustado !== null ? (
+                            <>
+                              <span className="line-through opacity-70">${cita.servicio.precio.toLocaleString()}</span>
+                              <span className="text-brand font-bold bg-brand/10 px-1 py-0.5 rounded ml-1">${cita.precio_ajustado.toLocaleString()}</span>
+                            </>
+                          ) : (
+                            `$${cita.servicio.precio.toLocaleString()}`
+                          )} · {cita.servicio.duracion} min
+                        </p>
                       </td>
                       <td className="px-5 py-3.5">
                         <p className="font-medium text-zinc-800 flex items-center gap-1.5">
@@ -443,19 +477,31 @@ export default function CitasAdmin() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-zinc-700 mb-1">Servicio</label>
-                  <select
-                    required
-                    value={newCita.servicioId}
-                    onChange={e => setNewCita(c => ({...c, servicioId: e.target.value}))}
-                    className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand focus:border-brand outline-none"
-                  >
-                    <option value="" disabled>Selecciona un servicio</option>
-                    {servicios.map(s => (
-                      <option key={s.id} value={s.id}>{s.nombre} (${s.precio.toLocaleString()} - {s.duracion} min)</option>
-                    ))}
-                  </select>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-zinc-700 mb-1">Servicio</label>
+                    <select
+                      required
+                      value={newCita.servicioId}
+                      onChange={e => setNewCita(c => ({...c, servicioId: e.target.value}))}
+                      className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand focus:border-brand outline-none"
+                    >
+                      <option value="" disabled>Selecciona un servicio</option>
+                      {servicios.map(s => (
+                        <option key={s.id} value={s.id}>{s.nombre} (${s.precio.toLocaleString()} - {s.duracion} min)</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-zinc-700 mb-1">Precio Ajustado</label>
+                    <input
+                      type="number"
+                      value={newCita.precio_ajustado}
+                      onChange={e => setNewCita(c => ({...c, precio_ajustado: e.target.value}))}
+                      className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand focus:border-brand outline-none"
+                      placeholder="Dejar en blanco para valor base"
+                    />
+                  </div>
                 </div>
 
                 <div>

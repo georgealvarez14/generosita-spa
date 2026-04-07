@@ -73,6 +73,7 @@ model cita {
   empleado_id String?   @db.Uuid
   estado_id   Int?      @default(1)
   notas       String?
+  precio_ajustado Int?
   created_at  DateTime? @default(now()) @db.Timestamptz
 
   cliente  cliente      @relation(fields: [cliente_id], references: [id], onDelete: Cascade, map: "fk_cliente")

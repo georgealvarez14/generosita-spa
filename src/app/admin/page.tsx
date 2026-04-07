@@ -17,7 +17,11 @@ type Stats = {
   pendientes: number;
   totalClientes: number;
   totalServicios: number;
-  ingresoEstimado: number;
+  ingresos: {
+    hoy: number;
+    semana: number;
+    mes: number;
+  };
 };
 
 type Cita = {
@@ -42,22 +46,24 @@ export default function AdminDashboard() {
     }).finally(() => setLoading(false));
 
     // Check for update modal
-    const hasSeenUpdate = localStorage.getItem('hasSeenUpdatev1.2');
+    const hasSeenUpdate = localStorage.getItem('hasSeenUpdatev1.4');
     if (!hasSeenUpdate) {
       setShowUpdateModal(true);
     }
   }, []);
 
   const dismissUpdateModal = () => {
-    localStorage.setItem('hasSeenUpdatev1.2', 'true');
+    localStorage.setItem('hasSeenUpdatev1.4', 'true');
     setShowUpdateModal(false);
   };
 
   const statCards = stats ? [
-    { label: 'Citas hoy', value: stats.citasHoy ?? 0, icon: CalendarDays, color: 'bg-purple-100 text-purple-700', link: '/admin/citas' },
-    { label: 'Pendientes', value: stats.pendientes ?? 0, icon: Clock, color: 'bg-amber-100 text-amber-700', link: '/admin/citas' },
-    { label: 'Total clientas', value: stats.totalClientes ?? 0, icon: Users, color: 'bg-pink-100 text-pink-700', link: '/admin/clientes' },
-    { label: 'Ingreso estimado', value: `$${(stats.ingresoEstimado ?? 0).toLocaleString()}`, icon: DollarSign, color: 'bg-green-100 text-green-700', link: '/admin/citas' },
+    { label: 'Citas Hoy', value: stats.citasHoy ?? 0, icon: CalendarDays, color: 'bg-purple-100 text-purple-700 border border-purple-200', link: '/admin/citas' },
+    { label: 'Pendientes', value: stats.pendientes ?? 0, icon: Clock, color: 'bg-amber-100 text-amber-700 border border-amber-200', link: '/admin/citas' },
+    { label: 'Total Clientas', value: stats.totalClientes ?? 0, icon: Users, color: 'bg-pink-100 text-pink-700 border border-pink-200', link: '/admin/clientes' },
+    { label: 'Ingresos Hoy', value: `$${(stats.ingresos?.hoy ?? 0).toLocaleString()}`, icon: DollarSign, color: 'bg-green-100 text-green-700 border border-green-200', link: '/admin/citas' },
+    { label: 'Ingresos de la Semana', value: `$${(stats.ingresos?.semana ?? 0).toLocaleString()}`, icon: TrendingUp, color: 'bg-emerald-100 text-emerald-700 border border-emerald-200', link: '/admin/citas' },
+    { label: 'Ingresos del Mes', value: `$${(stats.ingresos?.mes ?? 0).toLocaleString()}`, icon: Presentation, color: 'bg-teal-100 text-teal-700 border border-teal-200', link: '/admin/citas' },
   ] : [];
 
   return (
@@ -68,8 +74,8 @@ export default function AdminDashboard() {
       </FadeInOnLoad>
 
       {/* Stats grid */}
-      <StaggerContainerOnLoad className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-        {loading ? [...Array(4)].map((_, i) => (
+      <StaggerContainerOnLoad className="grid grid-cols-2 lg:grid-cols-3 gap-5">
+        {loading ? [...Array(6)].map((_, i) => (
           <StaggerItem key={i} className="h-32 bg-white rounded-3xl border border-purple-50 animate-pulse" />
         )) : statCards.map(({ label, value, icon: Icon, color, link }) => (
           <StaggerItem key={label}>
@@ -129,10 +135,10 @@ export default function AdminDashboard() {
               <div className="relative z-10">
                 <div className="flex items-center gap-2 text-brand mb-1">
                   <Sparkles className="w-5 h-5 text-brand drop-shadow-md" />
-                  <span className="text-xs font-bold uppercase tracking-widest text-brand-dark">Versión 1.2</span>
+                  <span className="text-xs font-bold uppercase tracking-widest text-brand-dark">Versión 1.4</span>
                 </div>
-                <h3 className="font-bold text-2xl text-brand-dark font-outfit mt-1">✨ Rediseño Premium ✨</h3>
-                <p className="text-zinc-600 text-sm mt-1 mb-2">Renovamos por completo la estética del administrador.</p>
+                <h3 className="font-bold text-2xl text-brand-dark font-outfit mt-1">¡Nuevas Novedades!</h3>
+                <p className="text-zinc-600 text-sm mt-1 mb-2">Acabamos de implementar funcionalidades de finanzas y caja.</p>
               </div>
               <button onClick={dismissUpdateModal} className="text-zinc-400 hover:text-zinc-600 p-1.5 rounded-full hover:bg-zinc-100 bg-white shadow-sm relative z-10 transition">
                 <X className="w-5 h-5" />
@@ -140,21 +146,30 @@ export default function AdminDashboard() {
             </div>
             
             <div className="p-6 overflow-y-auto bg-zinc-50 space-y-4 max-h-[60vh]">
-              <div className="bg-white p-5 rounded-2xl border border-zinc-100 shadow-sm transition-all hover:shadow-md hover:border-purple-200">
+              <div className="bg-white p-5 rounded-2xl border border-zinc-100 shadow-sm transition-all hover:shadow-md hover:border-brand/30">
                 <h4 className="font-bold text-zinc-800 flex items-center gap-2 mb-2">
-                  <Sparkles className="w-5 h-5 text-brand" /> Estilo Ultra-Premium y Animaciones
+                  <TrendingUp className="w-5 h-5 text-brand bg-purple-50 rounded-lg p-0.5" /> Nuevo Resumen Financiero
                 </h4>
                 <p className="text-sm text-zinc-500 leading-relaxed">
-                  Las clásicas pantallas grises quedaron en el pasado. Ahora todo el panel cuenta con colores pastel, sombras sofisticadas tipo "Glassmorphism" y <b>animaciones suaves</b> en todos los menús para una experiencia de primer nivel.
+                  Expandimos la tarjeta original de ingresos. Ahora tu administrador cuenta con una cuadrícula superior que te informa de tus ganancias de <b>Hoy</b>, la semana actual y de <b>todo el Mes</b>, respetando cualquier ajuste de precio manual que realices.
                 </p>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-zinc-100 shadow-sm transition-all hover:shadow-md hover:border-green-200">
+              <div className="bg-white p-5 rounded-2xl border border-zinc-100 shadow-sm transition-all hover:shadow-md hover:border-purple-200">
                 <h4 className="font-bold text-zinc-800 flex items-center gap-2 mb-2">
-                  <span className="w-5 h-5 flex items-center justify-center bg-green-100 text-green-600 rounded">👉</span> Nueva Cita Resaltada
+                  <DollarSign className="w-5 h-5 text-brand" /> Precio Ajustable por Cita
                 </h4>
-                <p className="text-sm text-zinc-500 leading-relaxed mb-3">
-                  Para que tú y tu equipo aprovechen la reciente mejora de agendar desde el sistema web, el botón de crear reservas en Citas ahora es de un llamativo <b>Color Verde</b> e incluye una etiqueta parpadeante de "NUEVO".
+                <p className="text-sm text-zinc-500 leading-relaxed">
+                  Ahora en la pestaña de <b>Gestión de Citas</b>, puedes ingresar un <i>"Precio Ajustado"</i> en caso de que alguna clienta requiera algún servicio extra menor o se le aplique un descuento. Si lo dejas en blanco, el sistema seguirá cobrando el precio original del servicio por defecto.
+                </p>
+              </div>
+
+              <div className="bg-white p-5 rounded-2xl border border-zinc-100 shadow-sm transition-all">
+                <h4 className="font-bold text-zinc-800 flex items-center gap-2 mb-2">
+                  <Sparkles className="w-5 h-5 text-brand" /> Recordatorio: Estilo Ultra-Premium
+                </h4>
+                <p className="text-sm text-zinc-500 leading-relaxed">
+                  Recuerda que renovamos por completo la estética del administrador. Colores pastel, sombras sofisticadas y <b>animaciones suaves</b> en todos los menús para una experiencia de primer nivel.
                 </p>
               </div>
             </div>
