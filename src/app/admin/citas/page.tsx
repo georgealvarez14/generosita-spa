@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale/es';
 import { CalendarDays, Clock, Phone, Pencil, Trash2, CheckCircle2, XCircle, Loader2, Plus, X } from 'lucide-react';
-import { FadeIn, StaggerContainer, StaggerItem } from "@/components/ui/Animations";
+import { FadeInOnLoad, StaggerContainerOnLoad, StaggerItem } from "@/components/ui/Animations";
 
 type Cita = {
   id: string; fecha: string; hora: string; estado_id: number; notas: string | null;
@@ -132,7 +132,7 @@ export default function CitasAdmin() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <FadeIn className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <FadeInOnLoad className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-3xl font-extrabold font-outfit text-brand-dark tracking-tight">Gestión de Citas</h1>
           <p className="text-zinc-500 text-sm mt-1 font-medium">{citas.length} cita{citas.length !== 1 ? 's' : ''} en total</p>
@@ -160,7 +160,7 @@ export default function CitasAdmin() {
             <span className="bg-white/25 text-white text-[10px] px-2 py-0.5 rounded-md ml-1 uppercase tracking-wider font-extrabold animate-pulse">Nuevo</span>
           </button>
         </div>
-      </FadeIn>
+      </FadeInOnLoad>
 
       {loading ? (
         <div className="space-y-4 animate-pulse">{[...Array(4)].map((_, i) => <div key={i} className="h-24 bg-white rounded-2xl border border-purple-50" />)}</div>
@@ -170,7 +170,7 @@ export default function CitasAdmin() {
           <p className="text-zinc-500 font-semibold text-lg">No hay citas con este filtro.</p>
         </div>
       ) : (
-        <StaggerContainer className="bg-transparent md:bg-white md:rounded-3xl md:border md:border-purple-100 overflow-hidden md:shadow-md md:shadow-brand/5">
+        <StaggerContainerOnLoad className="bg-transparent md:bg-white md:rounded-3xl md:border md:border-purple-100 overflow-hidden md:shadow-md md:shadow-brand/5">
           {/* Vista Móvil (Tarjetas) */}
           <div className="grid grid-cols-1 gap-4 md:hidden">
             {filtered.map(cita => {
@@ -364,7 +364,7 @@ export default function CitasAdmin() {
               </tbody>
             </table>
           </StaggerItem>
-        </StaggerContainer>
+        </StaggerContainerOnLoad>
       )}
 
       {/* Modal Nueva Cita */}

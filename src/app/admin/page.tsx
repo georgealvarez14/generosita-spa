@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { CalendarDays, Clock, Users, Scissors, DollarSign, TrendingUp, Presentation, Sparkles, X } from 'lucide-react';
 import Link from 'next/link';
-import { FadeIn, StaggerContainer, StaggerItem } from "@/components/ui/Animations";
+import { FadeInOnLoad, StaggerContainerOnLoad, StaggerItem } from "@/components/ui/Animations";
 
 const AdminCalendar = dynamic(() => import('@/components/admin/AdminCalendar'), {
   ssr: false,
@@ -62,13 +62,13 @@ export default function AdminDashboard() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
-      <FadeIn>
+      <FadeInOnLoad>
         <h1 className="text-3xl font-extrabold font-outfit text-brand-dark tracking-tight">Dashboard</h1>
         <p className="text-brand-light font-medium text-sm mt-1">Resumen general de Generosita SPA</p>
-      </FadeIn>
+      </FadeInOnLoad>
 
       {/* Stats grid */}
-      <StaggerContainer className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+      <StaggerContainerOnLoad className="grid grid-cols-2 lg:grid-cols-4 gap-5">
         {loading ? [...Array(4)].map((_, i) => (
           <StaggerItem key={i} className="h-32 bg-white rounded-3xl border border-purple-50 animate-pulse" />
         )) : statCards.map(({ label, value, icon: Icon, color, link }) => (
@@ -84,10 +84,10 @@ export default function AdminDashboard() {
             </Link>
           </StaggerItem>
         ))}
-      </StaggerContainer>
+      </StaggerContainerOnLoad>
 
       {/* Quick links */}
-      <FadeIn delay={0.1} className="grid sm:grid-cols-3 gap-5">
+      <FadeInOnLoad delay={0.1} className="grid sm:grid-cols-3 gap-5">
         {[
           { href: '/admin/citas', label: 'Gestionar Citas', desc: 'Ver, editar y cancelar reservas', icon: CalendarDays },
           { href: '/admin/servicios', label: 'Servicios', desc: 'Agregar, editar y eliminar servicios', icon: Scissors },
@@ -103,10 +103,10 @@ export default function AdminDashboard() {
             </div>
           </Link>
         ))}
-      </FadeIn>
+      </FadeInOnLoad>
 
       {/* Calendar preview */}
-      <FadeIn delay={0.2} className="bg-white rounded-3xl border border-purple-50/50 p-6 sm:p-8 shadow-sm">
+      <FadeInOnLoad delay={0.2} className="bg-white rounded-3xl border border-purple-50/50 p-6 sm:p-8 shadow-sm">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-xl font-bold text-brand-dark font-outfit">Agenda Semanal</h2>
@@ -119,7 +119,7 @@ export default function AdminDashboard() {
         <div className="rounded-2xl overflow-hidden border border-purple-50">
            <AdminCalendar citas={citas} />
         </div>
-      </FadeIn>
+      </FadeInOnLoad>
 
       {showUpdateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/50 backdrop-blur-sm animate-fade-in">

@@ -62,3 +62,38 @@ export function ScaleHover({ children, className }: { children: React.ReactNode,
     </motion.div>
   );
 }
+
+// ----- Variations that trigger immediately on load (Useful inside scrollable containers like admin dashboard) -----
+
+export function FadeInOnLoad({ children, delay = 0, className }: { children: React.ReactNode, delay?: number, className?: string }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay, ease: "easeOut" }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+export function StaggerContainerOnLoad({ children, className }: { children: React.ReactNode, className?: string }) {
+  return (
+    <motion.div
+      variants={{
+        hidden: {},
+        show: {
+          transition: {
+            staggerChildren: 0.15
+          }
+        }
+      }}
+      initial="hidden"
+      animate="show"
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
