@@ -7,7 +7,7 @@ import { LayoutDashboard, CalendarDays, Scissors, Users, ImageIcon, Menu, X, Ext
 import LogoutButton from './LogoutButton';
 
 const navItems = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
+  { href: '/admin', label: 'Inicio', icon: LayoutDashboard, exact: true },
   { href: '/admin/citas', label: 'Citas', icon: CalendarDays, exact: false },
   { href: '/admin/servicios', label: 'Servicios', icon: Scissors, exact: false },
   { href: '/admin/clientes', label: 'Clientas', icon: Users, exact: false },

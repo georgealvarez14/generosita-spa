@@ -69,7 +69,7 @@ export default function AdminDashboard() {
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       <FadeInOnLoad>
-        <h1 className="text-3xl font-extrabold font-outfit text-brand-dark tracking-tight">Dashboard</h1>
+        <h1 className="text-3xl font-extrabold font-outfit text-brand-dark tracking-tight">Inicio</h1>
         <p className="text-brand-light font-medium text-sm mt-1">Resumen general de Generosita SPA</p>
       </FadeInOnLoad>
 
