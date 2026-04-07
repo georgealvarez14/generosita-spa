@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale/es';
 import { CalendarDays, Clock, Phone, Pencil, Trash2, CheckCircle2, XCircle, Loader2, Plus, X } from 'lucide-react';
+import { FadeIn, StaggerContainer, StaggerItem } from "@/components/ui/Animations";
 
 type Cita = {
   id: string; fecha: string; hora: string; estado_id: number; notas: string | null;
@@ -131,21 +132,21 @@ export default function CitasAdmin() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <FadeIn className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold font-outfit text-zinc-800">Gestión de Citas</h1>
-          <p className="text-zinc-400 text-sm">{citas.length} cita{citas.length !== 1 ? 's' : ''} en total</p>
+          <h1 className="text-3xl font-extrabold font-outfit text-brand-dark tracking-tight">Gestión de Citas</h1>
+          <p className="text-zinc-500 text-sm mt-1 font-medium">{citas.length} cita{citas.length !== 1 ? 's' : ''} en total</p>
         </div>
         
         <div className="flex flex-wrap gap-2 items-center">
           {/* Filter tabs */}
-          <div className="flex bg-white rounded-lg border border-zinc-200 p-1 mr-2">
+          <div className="flex bg-white rounded-xl border border-purple-100 p-1 mr-2 shadow-sm">
             {[{ id: 'all', label: 'Todas' }, ...ESTADOS].map(e => (
               <button
                 key={e.id}
                 onClick={() => setFilter(e.id as any)}
-                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
-                  filter === e.id ? 'bg-brand text-white shadow-sm' : 'text-zinc-500 hover:bg-zinc-50'
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  filter === e.id ? 'bg-brand text-white shadow-md shadow-brand/20' : 'text-zinc-500 hover:bg-purple-50 hover:text-brand'
                 }`}
               >{e.label}</button>
             ))}
@@ -153,22 +154,22 @@ export default function CitasAdmin() {
           
           <button 
             onClick={() => setIsCreating(true)}
-            className="flex items-center gap-1.5 bg-brand hover:bg-brand-dark text-white px-4 py-2 rounded-lg font-bold text-sm shadow-md transition-all"
+            className="flex items-center gap-1.5 bg-brand hover:bg-brand-dark text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-brand/20 transition-all hover:scale-105"
           >
             <Plus className="w-4 h-4" /> Nueva Cita
           </button>
         </div>
-      </div>
+      </FadeIn>
 
       {loading ? (
-        <div className="space-y-3 animate-pulse">{[...Array(4)].map((_, i) => <div key={i} className="h-20 bg-white rounded-xl border border-zinc-200" />)}</div>
+        <div className="space-y-4 animate-pulse">{[...Array(4)].map((_, i) => <div key={i} className="h-24 bg-white rounded-2xl border border-purple-50" />)}</div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-2xl border border-zinc-200">
-          <CalendarDays className="w-12 h-12 text-zinc-300 mx-auto mb-3" />
-          <p className="text-zinc-500 font-medium">No hay citas con este filtro.</p>
+        <div className="text-center py-20 bg-white rounded-3xl border border-purple-50 shadow-sm">
+          <CalendarDays className="w-16 h-16 text-brand-light/30 mx-auto mb-4" />
+          <p className="text-zinc-500 font-semibold text-lg">No hay citas con este filtro.</p>
         </div>
       ) : (
-        <div className="bg-transparent md:bg-white md:rounded-2xl md:border md:border-zinc-200 overflow-hidden md:shadow-sm">
+        <StaggerContainer className="bg-transparent md:bg-white md:rounded-3xl md:border md:border-purple-100 overflow-hidden md:shadow-md md:shadow-brand/5">
           {/* Vista Móvil (Tarjetas) */}
           <div className="grid grid-cols-1 gap-4 md:hidden">
             {filtered.map(cita => {
@@ -176,10 +177,10 @@ export default function CitasAdmin() {
               const isEditing = editingId === cita.id;
               const isDeleting = deletingId === cita.id;
               return (
-                <div key={cita.id} className="bg-white border border-zinc-200 rounded-2xl p-5 shadow-sm space-y-4">
+                <StaggerItem key={cita.id} className="bg-white border border-purple-100 rounded-3xl p-5 shadow-sm space-y-4 hover:border-purple-200 transition-colors">
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="font-bold text-zinc-800 text-lg leading-tight">{cita.cliente.nombre}</p>
+                      <p className="font-bold text-brand-dark text-lg leading-tight">{cita.cliente.nombre}</p>
                       <a href={`https://wa.me/${cita.cliente.telefono}`} target="_blank"
                         className="text-sm text-zinc-500 hover:text-brand flex items-center gap-1.5 mt-1">
                         <Phone className="w-3.5 h-3.5" />{cita.cliente.telefono}
@@ -235,56 +236,56 @@ export default function CitasAdmin() {
                     )
                   )}
 
-                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-100">
+                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-purple-50">
                     {isEditing ? (
                       <>
-                        <button onClick={() => setEditingId(null)} className="flex-1 py-2 text-sm font-semibold text-zinc-500 bg-zinc-100 rounded-xl hover:bg-zinc-200 transition">
+                        <button onClick={() => setEditingId(null)} className="flex-1 py-2.5 text-sm font-semibold text-zinc-500 bg-zinc-100 rounded-xl hover:bg-zinc-200 transition">
                           Cancelar
                         </button>
                         <button onClick={() => saveEdit(cita.id)} disabled={saving}
-                          className="flex-1 py-2 text-sm font-semibold text-white bg-brand rounded-xl hover:bg-brand-dark transition flex items-center justify-center gap-1.5">
+                          className="flex-1 py-2.5 text-sm font-semibold text-white bg-brand rounded-xl hover:bg-brand-dark transition flex items-center justify-center gap-1.5 shadow-md shadow-brand/20">
                           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />} Guardar
                         </button>
                       </>
                     ) : (
                       <>
                         <button onClick={() => deleteCita(cita.id)} disabled={isDeleting}
-                          className="flex-1 py-2 text-sm font-semibold text-red-600 bg-red-50 border border-red-100 rounded-xl hover:bg-red-100 transition flex items-center justify-center gap-1.5">
+                          className="flex-1 py-2.5 text-sm font-semibold text-red-600 bg-red-50 border border-red-100 rounded-xl hover:bg-red-100 transition flex items-center justify-center gap-1.5">
                           {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />} Eliminar
                         </button>
-                        <button onClick={() => startEdit(cita)} className="flex-1 py-2 text-sm font-semibold text-brand-dark bg-brand-light/30 border border-brand/20 rounded-xl hover:bg-brand-light/50 transition flex items-center justify-center gap-1.5">
+                        <button onClick={() => startEdit(cita)} className="flex-1 py-2.5 text-sm font-semibold text-brand-dark bg-brand-light/20 border border-brand/20 rounded-xl hover:bg-brand-light/40 transition flex items-center justify-center gap-1.5">
                           <Pencil className="w-4 h-4" /> Editar
                         </button>
                       </>
                     )}
                   </div>
-                </div>
+                </StaggerItem>
               );
             })}
           </div>
 
           {/* Vista Escritorio (Tabla) */}
-          <div className="hidden md:block overflow-x-auto">
+          <StaggerItem className="hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse text-sm">
               <thead>
-                <tr className="bg-zinc-50 border-b border-zinc-200 text-xs text-zinc-500 uppercase tracking-wider">
-                  <th className="px-5 py-3 font-semibold">Cliente</th>
-                  <th className="px-5 py-3 font-semibold">Servicio</th>
-                  <th className="px-5 py-3 font-semibold">Fecha / Hora</th>
-                  <th className="px-5 py-3 font-semibold">Estado</th>
-                  <th className="px-5 py-3 font-semibold">Notas</th>
-                  <th className="px-5 py-3 font-semibold text-right">Acciones</th>
+                <tr className="bg-purple-50/50 border-b border-purple-100 text-xs text-brand-dark uppercase tracking-widest">
+                  <th className="px-6 py-4 font-bold">Cliente</th>
+                  <th className="px-6 py-4 font-bold">Servicio</th>
+                  <th className="px-6 py-4 font-bold">Fecha / Hora</th>
+                  <th className="px-6 py-4 font-bold">Estado</th>
+                  <th className="px-6 py-4 font-bold">Notas</th>
+                  <th className="px-6 py-4 font-bold text-right">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-100">
-                {filtered.map(cita => {
+              <tbody className="divide-y divide-purple-100/50">
+                {filtered.map((cita) => {
                   const estado = ESTADOS.find(e => e.id === cita.estado_id);
                   const isEditing = editingId === cita.id;
                   const isDeleting = deletingId === cita.id;
                   return (
-                    <tr key={cita.id} className={`transition-colors ${isEditing ? 'bg-brand-bg/50' : 'hover:bg-zinc-50/70'}`}>
-                      <td className="px-5 py-3.5">
-                        <p className="font-semibold text-zinc-800">{cita.cliente.nombre}</p>
+                    <tr key={cita.id} className={`transition-colors ${isEditing ? 'bg-brand-light/10' : 'hover:bg-purple-50/30'}`}>
+                      <td className="px-6 py-4">
+                        <p className="font-bold text-brand-dark text-[15px]">{cita.cliente.nombre}</p>
                         <a href={`https://wa.me/${cita.cliente.telefono}`} target="_blank"
                           className="text-xs text-zinc-400 hover:text-brand flex items-center gap-1 mt-0.5">
                           <Phone className="w-3 h-3" />{cita.cliente.telefono}
@@ -361,8 +362,8 @@ export default function CitasAdmin() {
                 })}
               </tbody>
             </table>
-          </div>
-        </div>
+          </StaggerItem>
+        </StaggerContainer>
       )}
 
       {/* Modal Nueva Cita */}

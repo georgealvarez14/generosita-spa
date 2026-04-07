@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Clock, Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { FadeIn, StaggerContainer, StaggerItem } from "@/components/ui/Animations";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ export default async function ServiciosPage() {
     <div className="flex flex-col min-h-screen">
       {/* Header section */}
       <section className="bg-gradient-to-br from-purple-50 to-pink-50 py-16">
-        <div className="container px-4 mx-auto text-center">
+        <FadeIn className="container px-4 mx-auto text-center">
           <div className="inline-flex items-center rounded-full border border-purple-200 bg-white/60 px-4 py-2 text-sm font-medium text-purple-700 backdrop-blur-sm mb-4">
             <Sparkles className="mr-2 h-4 w-4" />
             Experiencia Única
@@ -30,7 +31,7 @@ export default async function ServiciosPage() {
             Utilizamos productos de la más alta calidad para asegurar resultados duraderos y hermosos,
             siempre cuidando la salud de tus uñas.
           </p>
-        </div>
+        </FadeIn>
       </section>
 
       {/* Services Grid */}
@@ -40,9 +41,9 @@ export default async function ServiciosPage() {
             <p className="text-purple-500">No hay servicios disponibles en este momento.</p>
           </div>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <StaggerContainer className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {servicios.map((servicio) => (
-              <div
+              <StaggerItem
                 key={servicio.id}
                 className="bg-white rounded-3xl p-6 border border-purple-100 shadow-sm hover:shadow-2xl hover:shadow-purple-100 hover:border-purple-200 hover:-translate-y-1 transition-all flex flex-col"
               >
@@ -64,13 +65,13 @@ export default async function ServiciosPage() {
                     Reservar <ArrowRight className="ml-2 w-4 h-4" />
                   </Link>
                 </div>
-              </div>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         )}
 
         {/* Bottom CTA */}
-        <div className="mt-16 bg-gradient-to-br from-purple-100 to-pink-50 rounded-3xl p-8 md:p-12 text-center border border-purple-200">
+        <FadeIn className="mt-16 bg-gradient-to-br from-purple-100 to-pink-50 rounded-3xl p-8 md:p-12 text-center border border-purple-200">
           <h3 className="text-2xl font-bold font-outfit text-purple-900 mb-4">
             ¿No estás segura de qué servicio elegir?
           </h3>
@@ -84,7 +85,7 @@ export default async function ServiciosPage() {
           >
             Reservar Ahora
           </Link>
-        </div>
+        </FadeIn>
       </section>
     </div>
   );

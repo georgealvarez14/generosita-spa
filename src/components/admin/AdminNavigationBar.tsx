@@ -27,35 +27,35 @@ export default function AdminNavigationBar({ children }: { children: React.React
   }, [pathname]);
 
   return (
-    <div className="min-h-screen bg-zinc-100 flex flex-col relative w-full h-full overflow-hidden">
+    <div className="min-h-screen bg-brand-bg flex flex-col relative w-full h-full overflow-hidden">
       {/* Top Header */}
-      <header className="bg-brand-dark text-white shadow-lg z-30 h-14 flex items-center px-4 md:px-6 shrink-0 relative">
+      <header className="bg-white/80 backdrop-blur-xl border-b border-purple-100/50 shadow-sm z-30 h-16 flex items-center px-4 md:px-6 shrink-0 relative transition-all">
         <div className="flex items-center gap-3 flex-1">
           {/* Mobile hamburger button */}
           <button 
             onClick={() => setIsMobileOpen(true)}
-            className="md:hidden p-1.5 -ml-1.5 shrink-0 rounded-lg hover:bg-white/10 transition-colors focus:outline-none"
+            className="md:hidden p-1.5 -ml-1.5 shrink-0 rounded-lg text-brand-dark hover:bg-brand-light/30 transition-colors focus:outline-none"
           >
-            <Menu className="w-6 h-6 text-white" />
+            <Menu className="w-6 h-6" />
           </button>
           
-          <Link href="/admin" className="font-outfit text-lg font-bold flex items-center gap-2">
-            <span className="bg-white text-brand-dark w-7 h-7 rounded-lg flex items-center justify-center font-black text-sm">G</span>
+          <Link href="/admin" className="font-outfit text-xl font-bold flex items-center gap-2.5 text-brand-dark group">
+            <span className="bg-gradient-to-br from-brand to-pink-500 text-white w-8 h-8 rounded-xl flex items-center justify-center font-black text-sm shadow-md group-hover:scale-105 transition-transform">G</span>
             <span className="hidden sm:inline">Generosita SPA</span>
           </Link>
-          <span className="text-brand-light/40 text-xs hidden sm:block">· Admin</span>
+          <span className="bg-purple-100 text-brand-dark font-semibold px-2 py-0.5 rounded-md text-[10px] hidden sm:block uppercase tracking-wider">Admin</span>
         </div>
         <div className="flex items-center gap-2 sm:gap-4">
-          <Link href="/portal/perfil" className="text-brand-light hover:text-white text-sm font-medium transition-colors flex items-center gap-1.5" title="Mi Perfil">
+          <Link href="/portal" className="text-zinc-500 hover:text-brand text-sm font-medium transition-colors flex items-center gap-1.5" title="Mi Perfil">
             <UserIcon className="w-4 h-4" />
             <span className="hidden lg:inline">Mi Perfil</span>
           </Link>
-          <div className="w-px h-4 bg-brand-light/20 mx-1 hidden sm:block"></div>
-          <Link href="/" className="text-brand-light hover:text-white text-sm font-medium transition-colors flex items-center gap-1.5" title="Ver sitio web">
+          <div className="w-px h-4 bg-purple-200 mx-1 hidden sm:block"></div>
+          <Link href="/" className="text-zinc-500 hover:text-brand text-sm font-medium transition-colors flex items-center gap-1.5" title="Ver sitio web">
             <ExternalLink className="w-4 h-4" />
             <span className="hidden lg:inline">Ver sitio web</span>
           </Link>
-          <div className="w-px h-4 bg-brand-light/20 mx-1 hidden sm:block"></div>
+          <div className="w-px h-4 bg-purple-200 mx-1 hidden sm:block"></div>
           <LogoutButton />
         </div>
       </header>
@@ -63,21 +63,21 @@ export default function AdminNavigationBar({ children }: { children: React.React
       {/* Main Container */}
       <div className="flex flex-1 overflow-hidden relative">
         {/* Desktop Sidebar (hidden on mobile) */}
-        <aside className="w-56 bg-white border-r border-zinc-200 shrink-0 hidden md:flex flex-col pt-4 overflow-y-auto">
-          <nav className="flex-1 px-3 space-y-1">
+        <aside className="w-64 bg-white/80 backdrop-blur-md border-r border-purple-100/50 shrink-0 hidden md:flex flex-col pt-6 overflow-y-auto">
+          <nav className="flex-1 px-4 space-y-1.5">
             {navItems.map(({ href, label, icon: Icon, exact }) => {
               const active = isActive(href, exact);
               return (
                 <Link
                   key={href}
                   href={href}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                  className={`flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[15px] font-semibold transition-all ${
                     active
-                      ? 'bg-brand-light text-brand-dark shadow-sm'
-                      : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-800'
+                      ? 'bg-gradient-to-r from-brand-light/80 to-brand-light/20 text-brand-dark shadow-sm ring-1 ring-brand-light/50'
+                      : 'text-zinc-500 hover:bg-purple-50 hover:text-brand'
                   }`}
                 >
-                  <Icon className={`w-4.5 h-4.5 ${active ? 'text-brand-dark' : 'text-zinc-400'}`} />
+                  <Icon className={`w-5 h-5 transition-colors ${active ? 'text-brand' : 'text-zinc-400 group-hover:text-brand-light'}`} />
                   {label}
                 </Link>
               );
@@ -96,16 +96,16 @@ export default function AdminNavigationBar({ children }: { children: React.React
         <div className="fixed inset-0 z-[100] flex md:hidden">
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 bg-brand-dark/50 backdrop-blur-sm transition-opacity" 
+            className="fixed inset-0 bg-brand-dark/40 backdrop-blur-sm transition-opacity" 
             onClick={() => setIsMobileOpen(false)}
           ></div>
           
           {/* Sidebar Menu */}
-          <aside className="relative flex w-72 max-w-[80vw] flex-col overflow-y-auto bg-white shadow-2xl animate-in slide-in-from-left duration-300">
-            <div className="flex items-center justify-between px-5 h-16 bg-brand-bg/50 border-b border-brand-light/20">
-              <span className="font-outfit font-bold text-lg text-brand-dark flex items-center gap-2">
-                 <span className="bg-brand text-white w-6 h-6 rounded-md flex items-center justify-center font-black text-xs">G</span>
-                 Menú Admin
+          <aside className="relative flex w-[280px] max-w-[85vw] flex-col overflow-y-auto bg-white shadow-2xl animate-in slide-in-from-left duration-300">
+            <div className="flex items-center justify-between px-6 h-20 bg-gradient-to-br from-brand-light/30 to-brand-bg border-b border-purple-100">
+              <span className="font-outfit font-bold text-xl text-brand-dark flex items-center gap-2.5">
+                 <span className="bg-gradient-to-br from-brand to-pink-500 text-white w-8 h-8 rounded-xl flex items-center justify-center font-black text-sm shadow-md">G</span>
+                 Admin
               </span>
               <button 
                 type="button" 
@@ -122,9 +122,9 @@ export default function AdminNavigationBar({ children }: { children: React.React
                   <Link
                     key={href}
                     href={href}
-                    className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-[15px] font-medium transition-all ${
+                    className={`flex items-center gap-3.5 px-5 py-4 rounded-2xl text-[16px] font-semibold transition-all ${
                       active
-                        ? 'bg-brand text-white shadow-md shadow-brand/20'
+                        ? 'bg-gradient-to-r from-brand to-pink-500 text-white shadow-lg shadow-brand/20'
                         : 'text-zinc-600 hover:bg-brand-light/30 hover:text-brand-dark'
                     }`}
                   >
@@ -134,8 +134,8 @@ export default function AdminNavigationBar({ children }: { children: React.React
                 );
               })}
             </nav>
-            <div className="px-5 py-6 mt-auto border-t border-zinc-100">
-              <Link href="/" target="_blank" className="flex items-center justify-center gap-2 bg-zinc-50 border border-zinc-200 rounded-xl py-3.5 text-sm font-semibold text-zinc-600 hover:text-brand hover:border-brand-light hover:bg-white transition-all shadow-sm">
+            <div className="px-6 py-8 mt-auto bg-purple-50/50 border-t border-purple-100">
+              <Link href="/" target="_blank" className="flex items-center justify-center gap-2 bg-white border border-purple-200 rounded-2xl py-4 text-[15px] font-bold text-brand hover:text-brand-dark hover:border-brand-light hover:shadow-md transition-all">
                 <ExternalLink className="w-4 h-4" />
                 Ver la página web
               </Link>

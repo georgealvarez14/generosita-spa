@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { CalendarDays, Clock, Users, Scissors, DollarSign, TrendingUp, Presentation, Sparkles, X } from 'lucide-react';
 import Link from 'next/link';
+import { FadeIn, StaggerContainer, StaggerItem } from "@/components/ui/Animations";
 
 const AdminCalendar = dynamic(() => import('@/components/admin/AdminCalendar'), {
   ssr: false,
@@ -61,60 +62,64 @@ export default function AdminDashboard() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold font-outfit text-gray-800">Dashboard</h1>
-        <p className="text-gray-400 text-sm mt-0.5">Resumen general de Generosita SPA</p>
-      </div>
+      <FadeIn>
+        <h1 className="text-3xl font-extrabold font-outfit text-brand-dark tracking-tight">Dashboard</h1>
+        <p className="text-brand-light font-medium text-sm mt-1">Resumen general de Generosita SPA</p>
+      </FadeIn>
 
       {/* Stats grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <StaggerContainer className="grid grid-cols-2 lg:grid-cols-4 gap-5">
         {loading ? [...Array(4)].map((_, i) => (
-          <div key={i} className="h-28 bg-white rounded-2xl border border-gray-200 animate-pulse" />
+          <StaggerItem key={i} className="h-32 bg-white rounded-3xl border border-purple-50 animate-pulse" />
         )) : statCards.map(({ label, value, icon: Icon, color, link }) => (
-          <Link key={label} href={link} className="bg-white rounded-2xl border border-gray-200 p-5 flex flex-col gap-3 hover:shadow-md hover:border-purple-200 transition-all group">
-            <div className={`w-10 h-10 rounded-xl ${color} flex items-center justify-center`}>
-              <Icon className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-800 group-hover:text-purple-700 transition-colors">{value}</p>
-              <p className="text-xs text-gray-400 font-medium mt-0.5">{label}</p>
-            </div>
-          </Link>
+          <StaggerItem key={label}>
+            <Link href={link} className="bg-white rounded-3xl border border-purple-50/50 p-6 flex flex-col gap-4 shadow-sm hover:shadow-xl hover:shadow-brand/5 hover:border-brand-light/30 transition-all group block">
+              <div className={`w-12 h-12 rounded-2xl ${color} flex items-center justify-center shrink-0`}>
+                <Icon className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-3xl font-extrabold text-brand-dark tracking-tight group-hover:text-brand transition-colors">{value}</p>
+                <p className="text-sm text-zinc-500 font-semibold mt-1">{label}</p>
+              </div>
+            </Link>
+          </StaggerItem>
         ))}
-      </div>
+      </StaggerContainer>
 
       {/* Quick links */}
-      <div className="grid sm:grid-cols-3 gap-4">
+      <FadeIn delay={0.1} className="grid sm:grid-cols-3 gap-5">
         {[
           { href: '/admin/citas', label: 'Gestionar Citas', desc: 'Ver, editar y cancelar reservas', icon: CalendarDays },
           { href: '/admin/servicios', label: 'Servicios', desc: 'Agregar, editar y eliminar servicios', icon: Scissors },
           { href: '/admin/clientes', label: 'Clientas', desc: 'Ver el historial de tus clientas', icon: Users },
         ].map(({ href, label, desc, icon: Icon }) => (
-          <Link key={href} href={href} className="bg-white rounded-2xl border border-gray-200 p-5 flex items-start gap-4 hover:shadow-md hover:border-purple-200 transition-all group">
-            <div className="shrink-0 w-10 h-10 bg-purple-100 text-purple-700 rounded-xl flex items-center justify-center">
-              <Icon className="w-5 h-5" />
+          <Link key={href} href={href} className="bg-white rounded-3xl border border-purple-50/50 p-6 flex items-start gap-4 hover:shadow-xl hover:shadow-brand/5 hover:border-brand-light/30 transition-all group">
+            <div className="shrink-0 w-12 h-12 bg-purple-50 text-brand rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Icon className="w-6 h-6" />
             </div>
             <div>
-              <p className="font-bold text-gray-800 text-sm group-hover:text-purple-700">{label}</p>
-              <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
+              <p className="font-bold text-brand-dark text-base group-hover:text-brand transition-colors">{label}</p>
+              <p className="text-xs text-zinc-500 font-medium mt-1 leading-relaxed">{desc}</p>
             </div>
           </Link>
         ))}
-      </div>
+      </FadeIn>
 
       {/* Calendar preview */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-5">
-        <div className="flex items-center justify-between mb-5">
+      <FadeIn delay={0.2} className="bg-white rounded-3xl border border-purple-50/50 p-6 sm:p-8 shadow-sm">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="font-bold text-gray-800 font-outfit">Agenda</h2>
-            <p className="text-xs text-gray-400 mt-0.5">Vista general de las citas</p>
+            <h2 className="text-xl font-bold text-brand-dark font-outfit">Agenda Semanal</h2>
+            <p className="text-sm text-zinc-500 font-medium mt-1">Vista general de las próximas citas</p>
           </div>
-          <Link href="/admin/citas" className="text-xs text-purple-600 font-semibold hover:underline flex items-center gap-1">
-            <TrendingUp className="w-3.5 h-3.5" /> Ver todas →
+          <Link href="/admin/citas" className="inline-flex items-center gap-1.5 px-4 py-2 bg-purple-50 text-brand text-sm font-bold rounded-xl hover:bg-brand hover:text-white transition-colors">
+            <TrendingUp className="w-4 h-4" /> Ver todas
           </Link>
         </div>
-        <AdminCalendar citas={citas} />
-      </div>
+        <div className="rounded-2xl overflow-hidden border border-purple-50">
+           <AdminCalendar citas={citas} />
+        </div>
+      </FadeIn>
 
       {showUpdateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/50 backdrop-blur-sm animate-fade-in">

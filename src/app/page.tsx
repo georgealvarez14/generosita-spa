@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Sparkles, Star, CalendarHeart, Clock, MapPin, Phone, User } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
+import { FadeIn, StaggerContainer, StaggerItem } from "@/components/ui/Animations";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +32,7 @@ export default async function Home() {
 
         <div className="container px-4 md:px-6 relative z-10 mx-auto">
           <div className="grid gap-8 lg:grid-cols-2 items-center">
-            <div className="flex flex-col justify-center space-y-6 text-center lg:text-left">
+            <FadeIn className="flex flex-col justify-center space-y-6 text-center lg:text-left">
               <div className="inline-flex items-center justify-center lg:justify-start gap-2 rounded-full border border-purple-200 bg-white/60 px-4 py-2 text-sm font-medium text-purple-700 backdrop-blur-sm w-fit mx-auto lg:mx-0">
                 <Sparkles className="h-4 w-4" />
                 Elegancia y Perfección
@@ -92,10 +93,10 @@ export default async function Home() {
                   <span>Te esperamos con amor</span>
                 </div>
               </div>
-            </div>
+            </FadeIn>
 
             {/* Logo Grande - sin fondo */}
-            <div className="relative flex items-center justify-center">
+            <FadeIn delay={0.2} className="relative flex items-center justify-center">
               <div className="relative w-full max-w-sm aspect-square">
                 {/* Efecto de brillo detrás, no fondo blanco */}
                 <div className="absolute inset-4 bg-gradient-to-br from-purple-300/30 to-pink-300/30 rounded-full blur-xl" />
@@ -109,7 +110,7 @@ export default async function Home() {
                   key="logo-hero-v2"
                 />
               </div>
-            </div>
+            </FadeIn>
           </div>
         </div>
       </section>
@@ -130,14 +131,14 @@ export default async function Home() {
             </p>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
+          <StaggerContainer className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
             {servicios.length === 0 ? (
-              <div className="col-span-full text-center py-12">
+              <StaggerItem className="col-span-full text-center py-12">
                 <p className="text-purple-500">No hay servicios disponibles en este momento.</p>
-              </div>
+              </StaggerItem>
             ) : (
               servicios.map((servicio) => (
-                <div
+                <StaggerItem
                   key={servicio.id}
                   className="group flex flex-col justify-between rounded-3xl border border-purple-100 bg-white p-6 shadow-sm transition-all hover:shadow-2xl hover:shadow-purple-100 hover:border-purple-200 hover:-translate-y-1"
                 >
@@ -162,10 +163,10 @@ export default async function Home() {
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </Link>
                   </div>
-                </div>
+                </StaggerItem>
               ))
             )}
-          </div>
+          </StaggerContainer>
 
           <div className="mt-12 text-center">
             <Link
@@ -187,7 +188,7 @@ export default async function Home() {
           <div className="absolute bottom-10 right-10 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
         </div>
 
-        <div className="container px-4 md:px-6 mx-auto text-center relative z-10">
+        <FadeIn className="container px-4 md:px-6 mx-auto text-center relative z-10">
           <CalendarHeart className="h-16 w-16 mx-auto mb-6 text-white/80" />
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold font-outfit text-white mb-6">
             Date un gusto hoy mismo
@@ -197,12 +198,12 @@ export default async function Home() {
           </p>
           <Link
             href="/reservar"
-            className="inline-flex h-14 items-center justify-center rounded-full bg-white px-10 text-lg font-bold text-purple-600 transition-all hover:scale-105 shadow-xl"
+            className="inline-flex h-14 items-center justify-center rounded-full bg-white px-10 text-lg font-bold text-purple-600 transition-all hover:scale-105 shadow-xl hover:shadow-2xl hover:shadow-white/20"
           >
             Agenda tu cita ahora
             <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
-        </div>
+        </FadeIn>
       </section>
     </>
   );
