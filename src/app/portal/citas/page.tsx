@@ -6,6 +6,19 @@ import { ArrowLeft, Calendar, Clock, MapPin, DollarSign, Sparkles } from 'lucide
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
+const formatTime12h = (timeStr: string | Date) => {
+  try {
+    const timeString = typeof timeStr === 'string' ? timeStr : timeStr.toISOString().split('T')[1]?.substring(0, 5) || '';
+    if (!timeString) return '';
+    const [h, m] = timeString.split(':').map(Number);
+    const period = h >= 12 ? 'PM' : 'AM';
+    const hour12 = h % 12 || 12;
+    return `${hour12}:${m.toString().padStart(2, '0')} ${period}`;
+  } catch(e) {
+    return String(timeStr);
+  }
+};
+
 export default async function MisCitasPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -74,8 +87,7 @@ export default async function MisCitasPage() {
             const isConfirmed = cita.estado_id === 2;
             const isCancelled = cita.estado_id === 3;
             // DateTime conversion
-            const horaDate = new Date(cita.hora);
-            const horaFormat = format(horaDate, 'HH:mm');
+            const horaFormat = formatTime12h(cita.hora);
             const fechaFormat = format(new Date(cita.fecha), "eeee, d 'de' MMMM yyyy", { locale: es });
 
             return (
