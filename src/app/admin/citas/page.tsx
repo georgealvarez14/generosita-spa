@@ -168,8 +168,103 @@ export default function CitasAdmin() {
           <p className="text-zinc-500 font-medium">No hay citas con este filtro.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
+        <div className="bg-transparent md:bg-white md:rounded-2xl md:border md:border-zinc-200 overflow-hidden md:shadow-sm">
+          {/* Vista Móvil (Tarjetas) */}
+          <div className="grid grid-cols-1 gap-4 md:hidden">
+            {filtered.map(cita => {
+              const estado = ESTADOS.find(e => e.id === cita.estado_id);
+              const isEditing = editingId === cita.id;
+              const isDeleting = deletingId === cita.id;
+              return (
+                <div key={cita.id} className="bg-white border border-zinc-200 rounded-2xl p-5 shadow-sm space-y-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-bold text-zinc-800 text-lg leading-tight">{cita.cliente.nombre}</p>
+                      <a href={`https://wa.me/${cita.cliente.telefono}`} target="_blank"
+                        className="text-sm text-zinc-500 hover:text-brand flex items-center gap-1.5 mt-1">
+                        <Phone className="w-3.5 h-3.5" />{cita.cliente.telefono}
+                      </a>
+                    </div>
+                    {isEditing ? (
+                      <select
+                        value={editData.estado_id}
+                        onChange={e => setEditData(d => ({ ...d, estado_id: Number(e.target.value) }))}
+                        className="text-xs border border-zinc-200 rounded-lg px-2 py-1.5 text-zinc-700 bg-white shadow-sm"
+                      >
+                        {ESTADOS.map(e => <option key={e.id} value={e.id}>{e.label}</option>)}
+                      </select>
+                    ) : (
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase ${estado?.cls}`}>
+                        {estado?.label ?? 'Desconocido'}
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100 flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-brand/10 flex items-center justify-center shrink-0">
+                        <CalendarDays className="w-3.5 h-3.5 text-brand" />
+                      </div>
+                      <p className="font-semibold text-zinc-800 text-sm">
+                        {format(new Date(cita.fecha), 'dd MMM yyyy', { locale: es })}
+                      </p>
+                      <span className="text-zinc-300">•</span>
+                      <p className="font-medium text-zinc-600 text-sm flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-zinc-400" />
+                        {formatHora(cita.hora)}
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-between mt-1">
+                       <p className="font-semibold text-brand-dark text-sm">{cita.servicio.nombre}</p>
+                       <p className="text-xs text-zinc-500 font-medium">${cita.servicio.precio.toLocaleString()} / {cita.servicio.duracion}m</p>
+                    </div>
+                  </div>
+
+                  {isEditing ? (
+                    <input
+                      value={editData.notas}
+                      onChange={e => setEditData(d => ({ ...d, notas: e.target.value }))}
+                      className="text-sm border border-zinc-200 rounded-xl px-3 py-2 w-full text-zinc-700 shadow-sm"
+                      placeholder="Notas especiales..."
+                    />
+                  ) : (
+                    cita.notas && (
+                      <p className="text-sm text-zinc-600 bg-amber-50/50 border border-amber-100 p-2.5 rounded-xl">
+                        <span className="font-medium text-amber-800">Nota:</span> {cita.notas}
+                      </p>
+                    )
+                  )}
+
+                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-100">
+                    {isEditing ? (
+                      <>
+                        <button onClick={() => setEditingId(null)} className="flex-1 py-2 text-sm font-semibold text-zinc-500 bg-zinc-100 rounded-xl hover:bg-zinc-200 transition">
+                          Cancelar
+                        </button>
+                        <button onClick={() => saveEdit(cita.id)} disabled={saving}
+                          className="flex-1 py-2 text-sm font-semibold text-white bg-brand rounded-xl hover:bg-brand-dark transition flex items-center justify-center gap-1.5">
+                          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />} Guardar
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button onClick={() => deleteCita(cita.id)} disabled={isDeleting}
+                          className="flex-1 py-2 text-sm font-semibold text-red-600 bg-red-50 border border-red-100 rounded-xl hover:bg-red-100 transition flex items-center justify-center gap-1.5">
+                          {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />} Eliminar
+                        </button>
+                        <button onClick={() => startEdit(cita)} className="flex-1 py-2 text-sm font-semibold text-brand-dark bg-brand-light/30 border border-brand/20 rounded-xl hover:bg-brand-light/50 transition flex items-center justify-center gap-1.5">
+                          <Pencil className="w-4 h-4" /> Editar
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Vista Escritorio (Tabla) */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse text-sm">
               <thead>
                 <tr className="bg-zinc-50 border-b border-zinc-200 text-xs text-zinc-500 uppercase tracking-wider">
@@ -219,7 +314,7 @@ export default function CitasAdmin() {
                             {ESTADOS.map(e => <option key={e.id} value={e.id}>{e.label}</option>)}
                           </select>
                         ) : (
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${estado?.cls}`}>
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide ${estado?.cls}`}>
                             {estado?.label ?? 'Desconocido'}
                           </span>
                         )}
