@@ -154,9 +154,10 @@ export default function CitasAdmin() {
           
           <button 
             onClick={() => setIsCreating(true)}
-            className="flex items-center gap-1.5 bg-brand hover:bg-brand-dark text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-brand/20 transition-all hover:scale-105"
+            className="flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-green-500/20 transition-all hover:scale-105"
           >
             <Plus className="w-4 h-4" /> Nueva Cita
+            <span className="bg-white/25 text-white text-[10px] px-2 py-0.5 rounded-md ml-1 uppercase tracking-wider font-extrabold animate-pulse">Nuevo</span>
           </button>
         </div>
       </FadeIn>

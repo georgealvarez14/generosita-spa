@@ -42,14 +42,14 @@ export default function AdminDashboard() {
     }).finally(() => setLoading(false));
 
     // Check for update modal
-    const hasSeenUpdate = localStorage.getItem('hasSeenUpdatev1.1');
+    const hasSeenUpdate = localStorage.getItem('hasSeenUpdatev1.2');
     if (!hasSeenUpdate) {
       setShowUpdateModal(true);
     }
   }, []);
 
   const dismissUpdateModal = () => {
-    localStorage.setItem('hasSeenUpdatev1.1', 'true');
+    localStorage.setItem('hasSeenUpdatev1.2', 'true');
     setShowUpdateModal(false);
   };
 
@@ -128,38 +128,34 @@ export default function AdminDashboard() {
               <div className="absolute -right-10 -top-10 w-40 h-40 bg-brand-light/30 rounded-full blur-3xl shadow-inner"></div>
               <div className="relative z-10">
                 <div className="flex items-center gap-2 text-brand mb-1">
-                  <Sparkles className="w-5 h-5" />
-                  <span className="text-xs font-bold uppercase tracking-widest text-brand-dark">Versión 1.1</span>
+                  <Sparkles className="w-5 h-5 text-brand drop-shadow-md" />
+                  <span className="text-xs font-bold uppercase tracking-widest text-brand-dark">Versión 1.2</span>
                 </div>
-                <h3 className="font-bold text-2xl text-brand-dark font-outfit mt-1">¡Nuevas Funciones!</h3>
-                <p className="text-zinc-600 text-sm mt-1">Acabamos de implementar algunas mejoras que solicitaste.</p>
+                <h3 className="font-bold text-2xl text-brand-dark font-outfit mt-1">✨ Rediseño Premium ✨</h3>
+                <p className="text-zinc-600 text-sm mt-1 mb-2">Renovamos por completo la estética del administrador.</p>
               </div>
               <button onClick={dismissUpdateModal} className="text-zinc-400 hover:text-zinc-600 p-1.5 rounded-full hover:bg-zinc-100 bg-white shadow-sm relative z-10 transition">
                 <X className="w-5 h-5" />
               </button>
             </div>
             
-            <div className="p-6 overflow-y-auto bg-zinc-50 space-y-4">
-              <div className="bg-white p-4 rounded-xl border border-zinc-100 shadow-sm">
+            <div className="p-6 overflow-y-auto bg-zinc-50 space-y-4 max-h-[60vh]">
+              <div className="bg-white p-5 rounded-2xl border border-zinc-100 shadow-sm transition-all hover:shadow-md hover:border-purple-200">
                 <h4 className="font-bold text-zinc-800 flex items-center gap-2 mb-2">
-                  <Clock className="w-4 h-4 text-brand" /> Formato de Fecha AM/PM
+                  <Sparkles className="w-5 h-5 text-brand" /> Estilo Ultra-Premium y Animaciones
                 </h4>
                 <p className="text-sm text-zinc-500 leading-relaxed">
-                  Todo el sistema, tanto para las clientas como en el panel de administrador, ahora muestra la hora en formato de 12 horas (AM / PM) facilitando su lectura al agendar.
+                  Las clásicas pantallas grises quedaron en el pasado. Ahora todo el panel cuenta con colores pastel, sombras sofisticadas tipo "Glassmorphism" y <b>animaciones suaves</b> en todos los menús para una experiencia de primer nivel.
                 </p>
               </div>
 
-              <div className="bg-white p-4 rounded-xl border border-zinc-100 shadow-sm">
+              <div className="bg-white p-5 rounded-2xl border border-zinc-100 shadow-sm transition-all hover:shadow-md hover:border-green-200">
                 <h4 className="font-bold text-zinc-800 flex items-center gap-2 mb-2">
-                  <CalendarDays className="w-4 h-4 text-brand" /> Creación de Citas desde Admin
+                  <span className="w-5 h-5 flex items-center justify-center bg-green-100 text-green-600 rounded">👉</span> Nueva Cita Resaltada
                 </h4>
                 <p className="text-sm text-zinc-500 leading-relaxed mb-3">
-                  Añadimos el botón <span className="font-semibold bg-zinc-100 px-1 rounded text-zinc-700">+ Nueva Cita</span> en la página de Configuración de Citas.
+                  Para que tú y tu equipo aprovechen la reciente mejora de agendar desde el sistema web, el botón de crear reservas en Citas ahora es de un llamativo <b>Color Verde</b> e incluye una etiqueta parpadeante de "NUEVO".
                 </p>
-                <div className="bg-amber-50 text-amber-800 p-3 rounded-lg text-xs font-medium border border-amber-100 flex items-start gap-2">
-                  <Users className="w-4 h-4 shrink-0 mt-0.5" />
-                  <p>Si la persona ya había reservado antes, solo debes escribir su número de <b>WhatsApp</b> y el sistema la reconocerá y vinculará los datos automáticamente.</p>
-                </div>
               </div>
             </div>
             
