@@ -414,7 +414,7 @@ export default function CitasAdmin() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-zinc-700 mb-1">Fecha</label>
                     <input
@@ -423,7 +423,7 @@ export default function CitasAdmin() {
                       value={newCita.fecha}
                       min={new Date().toISOString().split('T')[0]}
                       onChange={e => setNewCita(c => ({...c, fecha: e.target.value}))}
-                      className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand focus:border-brand outline-none"
+                      className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand focus:border-brand outline-none appearance-none min-w-0 bg-white"
                     />
                   </div>
                   <div>
@@ -432,7 +432,7 @@ export default function CitasAdmin() {
                       required
                       value={newCita.hora}
                       onChange={e => setNewCita(c => ({...c, hora: e.target.value}))}
-                      className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand focus:border-brand outline-none"
+                      className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand focus:border-brand outline-none bg-white min-w-0"
                     >
                       {TIME_SLOTS.map(t => (
                         <option key={t} value={t}>{formatTime12h(t)}</option>
