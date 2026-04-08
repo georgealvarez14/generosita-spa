@@ -71,7 +71,7 @@ export async function POST(req: Request) {
         servicios: { connect: serviciosIds.map((id: string) => ({ id })) },
         cliente_id: cliente.id,
         notas: notas || null,
-        precio_ajustado: isNaN(Number(precio_ajustado)) ? null : Number(precio_ajustado),
+        precio_ajustado: (precio_ajustado === '' || precio_ajustado === null || precio_ajustado === undefined || isNaN(Number(precio_ajustado))) ? null : Number(precio_ajustado),
         estado_id: 1, // 1 = pendiente en estado_cita
       },
       include: {
