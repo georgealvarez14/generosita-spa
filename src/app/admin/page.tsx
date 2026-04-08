@@ -27,7 +27,7 @@ type Stats = {
 type Cita = {
   id: string; fecha: string; hora: string; estado_id: number; notas: string | null;
   cliente: { nombre: string; telefono: string };
-  servicio: { nombre: string; precio: number; duracion: number };
+  servicios: { nombre: string; precio: number; duracion: number }[];
 };
 
 export default function AdminDashboard() {
