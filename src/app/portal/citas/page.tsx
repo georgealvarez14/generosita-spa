@@ -40,8 +40,8 @@ export default async function MisCitasPage() {
   const citas = await (prisma as any).cita.findMany({
     where: { cliente_id: cliente.id },
     include: {
-      servicio: true,
-      estado: true
+      servicios: true,
+      estado_cita: true
     },
     orderBy: [
       { fecha: 'desc' },
@@ -93,7 +93,6 @@ export default async function MisCitasPage() {
             return (
               <div key={cita.id} className="bg-white rounded-[2rem] p-6 sm:p-8 shadow-sm border border-brand/10 relative overflow-hidden group hover:border-brand/40 transition-colors">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-                  
                   {/* Service Info */}
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
@@ -101,9 +100,9 @@ export default async function MisCitasPage() {
                        {isConfirmed && <span className="bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">Confirmada</span>}
                        {isCancelled && <span className="bg-red-100 text-red-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">Cancelada</span>}
                     </div>
-                    <h3 className="text-2xl font-bold text-zinc-800 font-outfit mb-1">{cita.servicio.nombre}</h3>
+                    <h3 className="text-2xl font-bold text-zinc-800 font-outfit mb-1">{cita.servicios?.map((s:any)=>s.nombre).join(', ')}</h3>
                     <p className="text-brand font-bold flex items-center gap-1 text-lg">
-                      ${cita.servicio.precio.toLocaleString()} <span className="text-sm text-zinc-400 font-medium line-through decoration-transparent ml-2">• {cita.servicio.duracion} min</span>
+                      ${cita.servicios?.reduce((acc:any,s:any)=>acc+s.precio,0).toLocaleString()} <span className="text-sm text-zinc-400 font-medium line-through decoration-transparent ml-2">• {cita.servicios?.reduce((acc:any,s:any)=>acc+s.duracion,0)} min totales</span>
                     </p>
                   </div>
 
@@ -124,7 +123,6 @@ export default async function MisCitasPage() {
                       </div>
                     </div>
                   </div>
-
                 </div>
               </div>
             );

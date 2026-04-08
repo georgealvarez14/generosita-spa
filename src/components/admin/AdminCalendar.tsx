@@ -25,7 +25,7 @@ type Cita = {
   estado_id: number;
   notas: string | null;
   cliente: { nombre: string; telefono: string };
-  servicio: { nombre: string; precio: number; duracion: number };
+  servicios: { nombre: string; precio: number; duracion: number }[];
 };
 
 type CalendarEvent = {
@@ -41,12 +41,13 @@ type Props = { citas: Cita[] };
 // Custom event card shown inside Week/Day views
 function EventCard({ event }: { event: CalendarEvent }) {
   const dur = Math.round((event.end.getTime() - event.start.getTime()) / 60000);
+  const totalPrecio = event.resource.servicios?.reduce((acc, s) => acc + s.precio, 0) || 0;
   return (
     <div className="h-full overflow-hidden leading-tight">
       <p className="font-bold truncate text-white text-[11px]">{event.resource.cliente.nombre}</p>
-      <p className="truncate text-white/90 text-[10px]">{event.resource.servicio.nombre}</p>
+      <p className="truncate text-white/90 text-[10px]">{event.resource.servicios?.map(s => s.nombre).join(', ')}</p>
       {dur >= 45 && (
-        <p className="text-white/75 text-[10px]">{format(event.start, 'hh:mm a')} · ${event.resource.servicio.precio.toLocaleString()}</p>
+        <p className="text-white/75 text-[10px]">{format(event.start, 'hh:mm a')} · ${totalPrecio.toLocaleString()}</p>
       )}
     </div>
   );
@@ -57,14 +58,16 @@ function AgendaEvent({ event }: { event: CalendarEvent }) {
   return (
     <div className="py-1">
       <p className="font-bold text-zinc-800">{event.resource.cliente.nombre}</p>
-      <div className="flex items-center gap-2 text-sm text-zinc-500 mt-0.5">
-        <span>{event.resource.servicio.nombre}</span>
-        <span className="text-brand font-medium">${event.resource.servicio.precio.toLocaleString()}</span>
-        {event.resource.estado_id === 1 ? (
-          <span className="text-[10px] font-bold uppercase tracking-wide bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Pendiente</span>
-        ) : (
-          <span className="text-[10px] font-bold uppercase tracking-wide bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Confirmada</span>
-        )}
+      <div className="flex flex-col gap-0.5 text-sm text-zinc-500 mt-0.5">
+        <span className="truncate">{event.resource.servicios?.map(s => s.nombre).join(', ')}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-brand font-medium">${event.resource.servicios?.reduce((acc, s) => acc + s.precio, 0).toLocaleString()}</span>
+          {event.resource.estado_id === 1 ? (
+            <span className="text-[10px] font-bold uppercase tracking-wide bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Pendiente</span>
+          ) : (
+            <span className="text-[10px] font-bold uppercase tracking-wide bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Confirmada</span>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -88,11 +91,12 @@ export default function AdminCalendar({ citas }: Props) {
       hours,
       minutes
     );
+    const duracion = cita.servicios?.reduce((acc, s) => acc + s.duracion, 0) || 60;
     return {
       id: cita.id,
-      title: `${cita.cliente.nombre} — ${cita.servicio.nombre}`,
+      title: `${cita.cliente.nombre} — ${cita.servicios?.map(s => s.nombre).join(', ')}`,
       start: startDate,
-      end: addMinutes(startDate, cita.servicio.duracion),
+      end: addMinutes(startDate, duracion),
       resource: cita,
     };
   });
@@ -209,13 +213,13 @@ export default function AdminCalendar({ citas }: Props) {
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-100">
                   <p className="text-xs text-zinc-400 uppercase font-semibold mb-1.5 flex items-center gap-1">
-                    <User className="w-3 h-3" /> Servicio
+                    <User className="w-3 h-3" /> Servicios
                   </p>
-                  <p className="font-bold text-zinc-800">{selectedEvent.resource.servicio.nombre}</p>
-                  <p className="text-brand font-bold mt-1 flex items-center text-sm gap-0.5">
-                    <DollarSign className="w-3.5 h-3.5" />{selectedEvent.resource.servicio.precio.toLocaleString()}
+                  <p className="font-bold text-zinc-800 leading-tight">{selectedEvent.resource.servicios?.map(s => s.nombre).join(', ')}</p>
+                  <p className="text-brand font-bold mt-1.5 flex items-center text-sm gap-0.5">
+                    <DollarSign className="w-3.5 h-3.5" />{selectedEvent.resource.servicios?.reduce((acc, s) => acc + s.precio, 0).toLocaleString()}
                   </p>
-                  <p className="text-zinc-400 text-xs mt-0.5">{selectedEvent.resource.servicio.duracion} minutos</p>
+                  <p className="text-zinc-400 text-xs mt-0.5">{selectedEvent.resource.servicios?.reduce((acc, s) => acc + s.duracion, 0)} minutos totales</p>
                 </div>
                 <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-100">
                   <p className="text-xs text-zinc-400 uppercase font-semibold mb-1.5 flex items-center gap-1">
@@ -246,11 +250,11 @@ export default function AdminCalendar({ citas }: Props) {
                 className="px-5 py-2 rounded-lg text-zinc-600 hover:bg-zinc-200 transition-colors font-medium text-sm">
                 Cerrar
               </button>
-              <a
-                href={`https://wa.me/${selectedEvent.resource.cliente.telefono}?text=${encodeURIComponent(
-                  `Hola ${selectedEvent.resource.cliente.nombre} 💜 Te recordamos tu cita en Generosita SPA el ${format(selectedEvent.start, "dd 'de' MMMM", { locale: es })} a las ${format(selectedEvent.start, "hh:mm a")} para tu ${selectedEvent.resource.servicio.nombre}. ¡Te esperamos!`
-                )}`}
-                target="_blank"
+                <a
+                  href={`https://wa.me/${selectedEvent.resource.cliente.telefono}?text=${encodeURIComponent(
+                    `Hola ${selectedEvent.resource.cliente.nombre} 💜 Te recordamos tu cita en Generosita SPA el ${format(selectedEvent.start, "dd 'de' MMMM", { locale: es })} a las ${format(selectedEvent.start, "hh:mm a")} para tus servicios: ${selectedEvent.resource.servicios?.map(s => s.nombre).join(', ')}. ¡Te esperamos!`
+                  )}`}
+                  target="_blank"
                 className="inline-flex items-center gap-2 bg-[#25D366] text-white font-bold px-5 py-2 rounded-xl hover:bg-[#20b958] transition shadow-md shadow-[#25D366]/20 text-sm"
               >
                 <Send className="w-4 h-4" /> Recordatorio WhatsApp

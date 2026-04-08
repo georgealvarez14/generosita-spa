@@ -38,7 +38,7 @@ export async function GET(req: Request) {
       },
       include: {
         cliente: true,
-        servicio: true,
+        servicios: true,
       },
       orderBy: { fecha: 'asc' }
     });
@@ -47,13 +47,14 @@ export async function GET(req: Request) {
     const recordatorios = (citasProximas as any[]).map((cita) => {
       const fecha = cita.fecha.toLocaleDateString('es-CO', { day: '2-digit', month: 'long' });
       const hora = new Date(cita.hora).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+      const nombresServicios = cita.servicios?.map((s:any)=>s.nombre).join(', ');
       const mensaje = encodeURIComponent(
-        `Hola ${cita.cliente.nombre} 💜 Te recordamos tu cita en Generosita SPA mañana ${fecha} a las ${hora} para tu ${cita.servicio.nombre}. ¡Te esperamos!`
+        `Hola ${cita.cliente.nombre} 💜 Te recordamos tu cita en Generosita SPA mañana ${fecha} a las ${hora} para tus servicios: ${nombresServicios}. ¡Te esperamos!`
       );
       return {
         cliente: cita.cliente.nombre,
         telefono: cita.cliente.telefono,
-        servicio: cita.servicio.nombre,
+        servicios: nombresServicios,
         fecha,
         hora,
         whatsappLink: `https://wa.me/${cita.cliente.telefono}?text=${mensaje}`,
