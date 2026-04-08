@@ -6,9 +6,9 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { nombre, telefono, email, fecha, hora, servicioId, notas, precio_ajustado } = body;
+    const { nombre, telefono, email, fecha, hora, serviciosIds, notas, precio_ajustado } = body;
 
-    if (!nombre || !telefono || !fecha || !hora || !servicioId) {
+    if (!nombre || !telefono || !fecha || !hora || !serviciosIds || !Array.isArray(serviciosIds) || serviciosIds.length === 0) {
       return NextResponse.json({ error: 'Faltan campos obligatorios' }, { status: 400 });
     }
 
@@ -16,9 +16,9 @@ export async function POST(req: Request) {
     const [reqHours, reqMins] = hora.split(':').map(Number);
     const reqStartMin = reqHours * 60 + reqMins;
     
-    // Obtenemos el servicio solicitado para saber su duración
-    const servicioSolicitado = await prisma.servicio.findUnique({ where: { id: servicioId }});
-    const duracionSolicitada = servicioSolicitado?.duracion || 60;
+    // Obtenemos los servicios solicitados para saber su duración total
+    const serviciosSolicitados = await prisma.servicio.findMany({ where: { id: { in: serviciosIds } }});
+    const duracionSolicitada = serviciosSolicitados.reduce((acc, s) => acc + s.duracion, 0) || 60;
     const reqEndMin = reqStartMin + duracionSolicitada;
 
     // Use robust date boundaries to capture all appointments that land on the same calendar day
@@ -35,14 +35,14 @@ export async function POST(req: Request) {
         },
         estado_id: { not: 3 } // no contar canceladas
       },
-      include: { servicio: true }
+      include: { servicios: true }
     });
 
     const isOverlapping = citasDelDia.some((cita: any) => {
       const horaStr = cita.hora.toISOString().split('T')[1].substring(0, 5); 
       const [h, m] = horaStr.split(':').map(Number);
       const startMin = h * 60 + m;
-      const endMin = startMin + (cita.servicio?.duracion || 60);
+      const endMin = startMin + (cita.servicios?.reduce((acc: number, s: any) => acc + s.duracion, 0) || 60);
       
       return reqStartMin < endMin && reqEndMin > startMin;
     });
@@ -68,14 +68,14 @@ export async function POST(req: Request) {
       data: {
         fecha: new Date(fecha),
         hora: timeDate,
-        servicio_id: servicioId,
+        servicios: { connect: serviciosIds.map((id: string) => ({ id })) },
         cliente_id: cliente.id,
         notas: notas || null,
         precio_ajustado: isNaN(Number(precio_ajustado)) ? null : Number(precio_ajustado),
         estado_id: 1, // 1 = pendiente en estado_cita
       },
       include: {
-        servicio: true,
+        servicios: true,
       }
     });
 
@@ -105,7 +105,7 @@ export async function GET(req: Request) {
       where: whereClause,
       include: {
         cliente: true,
-        servicio: true,
+        servicios: true,
       },
       orderBy: [
         { fecha: 'desc' },

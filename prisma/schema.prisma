@@ -69,7 +69,6 @@ model cita {
   fecha       DateTime  @db.Date
   hora        DateTime  @db.Time
   cliente_id  String    @db.Uuid
-  servicio_id String    @db.Uuid
   empleado_id String?   @db.Uuid
   estado_id   Int?      @default(1)
   notas       String?
@@ -77,7 +76,7 @@ model cita {
   created_at  DateTime? @default(now()) @db.Timestamptz
 
   cliente  cliente      @relation(fields: [cliente_id], references: [id], onDelete: Cascade, map: "fk_cliente")
-  servicio servicio     @relation(fields: [servicio_id], references: [id], map: "fk_servicio")
+  servicios servicio[]
   empleado empleado?    @relation(fields: [empleado_id], references: [id], map: "fk_empleado")
   estado   estado_cita? @relation(fields: [estado_id], references: [id], map: "fk_estado")
 

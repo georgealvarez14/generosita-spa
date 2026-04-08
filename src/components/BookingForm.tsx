@@ -41,7 +41,7 @@ export default function BookingForm() {
   const [loadingServices, setLoadingServices] = useState(true);
   
   // Form State
-  const [selectedService, setSelectedService] = useState<Servicio | null>(null);
+  const [selectedServices, setSelectedServices] = useState<Servicio[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [formData, setFormData] = useState({ nombre: '', telefono: '', notas: '' });
@@ -87,7 +87,7 @@ export default function BookingForm() {
   }, [supabase]);
 
   useEffect(() => {
-    if (step === 2 && selectedService) {
+    if (step === 2 && selectedServices.length > 0) {
       setLoadingAvailability(true);
       const start = format(dates[0], 'yyyy-MM-dd');
       const end = format(dates[dates.length - 1], 'yyyy-MM-dd');
@@ -102,11 +102,11 @@ export default function BookingForm() {
         .catch(err => console.error("Error fetching availability:", err))
         .finally(() => setLoadingAvailability(false));
     }
-  }, [step, selectedService]);
+  }, [step, selectedServices]);
 
   const handleNext = () => {
     setErrorLine('');
-    if (step === 1 && !selectedService) { setErrorLine('Selecciona un servicio primero'); return; }
+    if (step === 1 && selectedServices.length === 0) { setErrorLine('Selecciona al menos un servicio'); return; }
     if (step === 2 && (!selectedDate || !selectedTime)) { setErrorLine('Selecciona fecha y hora'); return; }
     
     setStep((s) => (s + 1) as Step);
@@ -136,7 +136,7 @@ export default function BookingForm() {
           telefono: formData.telefono,
           fecha: selectedDate?.toISOString(),
           hora: selectedTime,
-          servicioId: selectedService?.id,
+          serviciosIds: selectedServices.map(s => s.id),
           notas: formData.notas
         })
       });
@@ -159,10 +159,11 @@ export default function BookingForm() {
 
   const handleWhatsAppRedirect = () => {
     const phone = '573172137402'; // Replace with real business phone
+    const serviciosTexto = selectedServices.map(s => s.nombre).join(', ');
     const notasText = formData.notas ? `\n\u{1F4DD} *Notas para la especialista:* ${formData.notas}` : '';
     
     // Using Unicode Escapes for emojis and Spanish accents to bypass Windows File Encoding corruptions
-    const rawText = `\u{1F49C} \u00A1Hola equipo de Generosita Spa! \u{2728}\nAcabo de agendar una nueva cita desde la p\u00E1gina web y me gustar\u00EDa confirmarla.\n\n\u{1F485} *Servicio:* ${selectedService?.nombre || ''}\n\u{1F4C5} *Fecha:* ${selectedDate ? format(selectedDate, "dd 'de' MMMM", { locale: es }) : ''}\n\u{23F0} *Hora:* ${selectedTime ? formatTime12h(selectedTime) : ''}\n\u{1F464} *A nombre de:* ${formData.nombre}${notasText}\n\n\u00A1Quedo atenta a su confirmaci\u00F3n, much\u00EDsimas gracias! \u{1F970}`;
+    const rawText = `\u{1F49C} \u00A1Hola equipo de Generosita Spa! \u{2728}\nAcabo de agendar una nueva cita desde la p\u00E1gina web y me gustar\u00EDa confirmarla.\n\n\u{1F485} *Servicios:* ${serviciosTexto}\n\u{1F4C5} *Fecha:* ${selectedDate ? format(selectedDate, "dd 'de' MMMM", { locale: es }) : ''}\n\u{23F0} *Hora:* ${selectedTime ? formatTime12h(selectedTime) : ''}\n\u{1F464} *A nombre de:* ${formData.nombre}${notasText}\n\n\u00A1Quedo atenta a su confirmaci\u00F3n, much\u00EDsimas gracias! \u{1F970}`;
 
     const encodedText = encodeURIComponent(rawText);
     window.open(`https://wa.me/${phone}?text=${encodedText}`, '_blank');
@@ -194,12 +195,18 @@ export default function BookingForm() {
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
-              {services.map(s => (
+              {services.map(s => {
+                const isSelected = selectedServices.some(selected => selected.id === s.id);
+                return (
                 <div 
                   key={s.id} 
-                  onClick={() => setSelectedService(s)}
+                  onClick={() => {
+                    setSelectedServices(prev => 
+                      isSelected ? prev.filter(p => p.id !== s.id) : [...prev, s]
+                    );
+                  }}
                   className={`cursor-pointer rounded-xl border-2 p-5 transition-all ${
-                    selectedService?.id === s.id 
+                    isSelected 
                       ? 'border-brand bg-brand-light/10 shadow-md shadow-brand/10' 
                       : 'border-zinc-100 bg-white hover:border-brand-light'
                   }`}
@@ -212,7 +219,7 @@ export default function BookingForm() {
                     <Clock className="w-3.5 h-3.5 mr-1" /> {s.duracion} min
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           )}
         </div>
@@ -223,9 +230,9 @@ export default function BookingForm() {
         <div className="animate-fade-in relative">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold font-outfit text-brand-dark">Selecciona horario</h2>
-            {selectedService && (
-               <div className="text-sm bg-brand-light/20 text-brand px-3 py-1 rounded-full font-medium">
-                 {selectedService.nombre}
+            {selectedServices.length > 0 && (
+               <div className="text-sm bg-brand-light/20 text-brand px-3 py-1 rounded-full font-medium max-w-[50%] truncate text-right">
+                 {selectedServices.map(s => s.nombre).join(', ')}
                </div>
             )}
           </div>
@@ -244,7 +251,8 @@ export default function BookingForm() {
                   const isFullyBooked = dayOcupados.length > 0 && TIME_SLOTS.every(t => {
                     const [h, m] = t.split(':').map(Number);
                     const slotStart = h * 60 + m;
-                    const slotEnd = slotStart + (selectedService?.duracion || 60);
+                    const duracionTotal = selectedServices.reduce((acc, s) => acc + s.duracion, 0) || 60;
+                    const slotEnd = slotStart + duracionTotal;
                     return dayOcupados.some(o => slotStart < o.endMin && slotEnd > o.startMin);
                   });
 
@@ -279,7 +287,8 @@ export default function BookingForm() {
                   {TIME_SLOTS.map(t => {
                     const [h, m] = t.split(':').map(Number);
                     const slotStart = h * 60 + m;
-                    const slotEnd = slotStart + (selectedService?.duracion || 60);
+                    const duracionTotal = selectedServices.reduce((acc, s) => acc + s.duracion, 0) || 60;
+                    const slotEnd = slotStart + duracionTotal;
                     const dateKey = format(selectedDate, 'yyyy-MM-dd');
                     const dayOcupados = ocupacionesPorDia[dateKey] || [];
                     
@@ -324,15 +333,15 @@ export default function BookingForm() {
             
             <div className="bg-brand-light/10 p-5 rounded-2xl flex flex-col md:flex-row gap-4 justify-between items-start md:items-center border border-brand/20 mb-8">
                <div>
-                 <p className="text-brand-dark font-bold text-lg">{selectedService?.nombre}</p>
+                 <p className="text-brand-dark font-bold text-lg">{selectedServices.map(s => s.nombre).join(', ')}</p>
                  <p className="text-zinc-600 text-sm flex items-center gap-1 mt-1">
                    <CalendarIcon className="w-3.5 h-3.5 shadow" /> 
                    {selectedDate && format(selectedDate, "eeee, dd 'de' MMMM", { locale: es })} a las {selectedTime ? formatTime12h(selectedTime) : ''}
                  </p>
                </div>
-               <div className="text-right">
+               <div className="text-right flex-shrink-0">
                  <p className="text-xs text-zinc-500 uppercase font-bold tracking-wider">A pagar en el local</p>
-                 <p className="text-2xl font-bold text-brand">${selectedService?.precio}</p>
+                 <p className="text-2xl font-bold text-brand">${selectedServices.reduce((acc, s) => acc + s.precio, 0)}</p>
                </div>
             </div>
 

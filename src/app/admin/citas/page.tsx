@@ -9,7 +9,7 @@ import { FadeInOnLoad, StaggerContainerOnLoad, StaggerItem } from "@/components/
 type Cita = {
   id: string; fecha: string; hora: string; estado_id: number; notas: string | null; precio_ajustado: number | null;
   cliente: { nombre: string; telefono: string };
-  servicio: { id: string; nombre: string; precio: number; duracion: number };
+  servicios: { id: string; nombre: string; precio: number; duracion: number }[];
 };
 
 type Cliente = { id: string; nombre: string; telefono: string; email: string | null };
@@ -48,7 +48,7 @@ export default function CitasAdmin() {
   const [isCreating, setIsCreating] = useState(false);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [servicios, setServicios] = useState<Servicio[]>([]);
-  const [newCita, setNewCita] = useState({ nombre: '', telefono: '', fecha: '', hora: '09:00', servicioId: '', notas: '', precio_ajustado: '' });
+  const [newCita, setNewCita] = useState({ nombre: '', telefono: '', fecha: '', hora: '09:00', serviciosIds: [] as string[], notas: '', precio_ajustado: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createError, setCreateError] = useState('');
 
@@ -105,7 +105,7 @@ export default function CitasAdmin() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al crear cita');
       setIsCreating(false);
-      setNewCita({ nombre: '', telefono: '', fecha: '', hora: '09:00', servicioId: '', notas: '', precio_ajustado: '' });
+      setNewCita({ nombre: '', telefono: '', fecha: '', hora: '09:00', serviciosIds: [], notas: '', precio_ajustado: '' });
       load();
     } catch (err: any) {
       setCreateError(err.message);
@@ -216,16 +216,18 @@ export default function CitasAdmin() {
                         {formatHora(cita.hora)}
                       </p>
                     </div>
-                    <div className="flex items-center justify-between mt-1">
-                       <p className="font-semibold text-brand-dark text-sm">{cita.servicio.nombre}</p>
-                       <p className="text-xs text-zinc-500 font-medium text-right">
+                    <div className="flex flex-col mt-1">
+                       <p className="font-semibold text-brand-dark text-sm leading-tight mb-0.5">{cita.servicios.map(s => s.nombre).join(', ')}</p>
+                       <p className="text-xs text-zinc-500 font-medium pb-1">
+                         Duración: {cita.servicios.reduce((acc, s) => acc + s.duracion, 0)}m
+                       </p>
+                       <p className="text-xs text-zinc-500 font-medium text-right mt-1">
                          <span className={cita.precio_ajustado !== null ? 'line-through text-zinc-400 mr-1' : ''}>
-                           ${cita.servicio.precio.toLocaleString()}
+                           ${cita.servicios.reduce((acc, s) => acc + s.precio, 0).toLocaleString()}
                          </span>
                          {cita.precio_ajustado !== null && (
                            <span className="text-brand font-bold bg-brand/10 px-1 py-0.5 rounded ml-1">${cita.precio_ajustado.toLocaleString()}</span>
                          )}
-                         <span className="ml-1">· {cita.servicio.duracion}m</span>
                        </p>
                     </div>
                   </div>
@@ -236,7 +238,7 @@ export default function CitasAdmin() {
                          value={editData.precio_ajustado}
                          onChange={e => setEditData(d => ({ ...d, precio_ajustado: e.target.value }))}
                          className="text-sm border border-zinc-200 rounded-xl px-3 py-2 w-full text-zinc-700 shadow-sm"
-                         placeholder={`Precio: $${cita.servicio.precio}`}
+                         placeholder={`Base: $${cita.servicios.reduce((acc, s) => acc + s.precio, 0)}`}
                          type="number"
                        />
                        <input
@@ -309,25 +311,25 @@ export default function CitasAdmin() {
                           <Phone className="w-3 h-3" />{cita.cliente.telefono}
                         </a>
                       </td>
-                      <td className="px-5 py-3.5">
-                        <p className="font-medium text-brand-dark">{cita.servicio.nombre}</p>
+                      <td className="px-5 py-3.5 max-w-[200px]">
+                        <p className="font-medium text-brand-dark truncate">{cita.servicios.map(s => s.nombre).join(', ')}</p>
                         <p className="text-xs text-zinc-400">
                           {isEditing ? (
                             <input
                               type="number"
                               value={editData.precio_ajustado}
                               onChange={e => setEditData(d => ({ ...d, precio_ajustado: e.target.value }))}
-                              placeholder={`$${cita.servicio.precio}`}
+                              placeholder={`$${cita.servicios.reduce((acc, s) => acc + s.precio, 0)}`}
                               className="w-20 px-1.5 py-1 border border-zinc-200 rounded text-xs mt-1 bg-white"
                             />
                           ) : cita.precio_ajustado !== null ? (
                             <>
-                              <span className="line-through opacity-70">${cita.servicio.precio.toLocaleString()}</span>
+                              <span className="line-through opacity-70">${cita.servicios.reduce((acc, s) => acc + s.precio, 0).toLocaleString()}</span>
                               <span className="text-brand font-bold bg-brand/10 px-1 py-0.5 rounded ml-1">${cita.precio_ajustado.toLocaleString()}</span>
                             </>
                           ) : (
-                            `$${cita.servicio.precio.toLocaleString()}`
-                          )} · {cita.servicio.duracion} min
+                            `$${cita.servicios.reduce((acc, s) => acc + s.precio, 0).toLocaleString()}`
+                          )} · {cita.servicios.reduce((acc, s) => acc + s.duracion, 0)} min
                         </p>
                       </td>
                       <td className="px-5 py-3.5">
@@ -479,16 +481,20 @@ export default function CitasAdmin() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-zinc-700 mb-1">Servicio</label>
+                    <label className="block text-sm font-semibold text-zinc-700 mb-1">Servicios (Mantén ctrl/cmd para varios)</label>
                     <select
+                      multiple
                       required
-                      value={newCita.servicioId}
-                      onChange={e => setNewCita(c => ({...c, servicioId: e.target.value}))}
-                      className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand focus:border-brand outline-none"
+                      size={4}
+                      value={newCita.serviciosIds}
+                      onChange={e => {
+                        const values = Array.from(e.target.selectedOptions, option => option.value);
+                        setNewCita(c => ({...c, serviciosIds: values}));
+                      }}
+                      className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand focus:border-brand outline-none text-sm bg-white"
                     >
-                      <option value="" disabled>Selecciona un servicio</option>
                       {servicios.map(s => (
-                        <option key={s.id} value={s.id}>{s.nombre} (${s.precio.toLocaleString()} - {s.duracion} min)</option>
+                        <option key={s.id} value={s.id}>{s.nombre} (${s.precio.toLocaleString()})</option>
                       ))}
                     </select>
                   </div>

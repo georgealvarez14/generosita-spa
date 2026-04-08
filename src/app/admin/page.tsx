@@ -46,14 +46,14 @@ export default function AdminDashboard() {
     }).finally(() => setLoading(false));
 
     // Check for update modal
-    const hasSeenUpdate = localStorage.getItem('hasSeenUpdatev1.4');
+    const hasSeenUpdate = localStorage.getItem('hasSeenUpdatev1.5');
     if (!hasSeenUpdate) {
       setShowUpdateModal(true);
     }
   }, []);
 
   const dismissUpdateModal = () => {
-    localStorage.setItem('hasSeenUpdatev1.4', 'true');
+    localStorage.setItem('hasSeenUpdatev1.5', 'true');
     setShowUpdateModal(false);
   };
 
@@ -135,10 +135,10 @@ export default function AdminDashboard() {
               <div className="relative z-10">
                 <div className="flex items-center gap-2 text-brand mb-1">
                   <Sparkles className="w-5 h-5 text-brand drop-shadow-md" />
-                  <span className="text-xs font-bold uppercase tracking-widest text-brand-dark">Versión 1.4</span>
+                  <span className="text-xs font-bold uppercase tracking-widest text-brand-dark">Versión 1.5</span>
                 </div>
-                <h3 className="font-bold text-2xl text-brand-dark font-outfit mt-1">¡Nuevas Novedades!</h3>
-                <p className="text-zinc-600 text-sm mt-1 mb-2">Acabamos de implementar funcionalidades de finanzas y caja.</p>
+                <h3 className="font-bold text-2xl text-brand-dark font-outfit mt-1">¡Nuevas y Grandes Mejoras!</h3>
+                <p className="text-zinc-600 text-sm mt-1 mb-2">Hemos expandido enormemente las capacidades de las citas y clientes.</p>
               </div>
               <button onClick={dismissUpdateModal} className="text-zinc-400 hover:text-zinc-600 p-1.5 rounded-full hover:bg-zinc-100 bg-white shadow-sm relative z-10 transition">
                 <X className="w-5 h-5" />
@@ -148,28 +148,28 @@ export default function AdminDashboard() {
             <div className="p-6 overflow-y-auto bg-zinc-50 space-y-4 max-h-[60vh]">
               <div className="bg-white p-5 rounded-2xl border border-zinc-100 shadow-sm transition-all hover:shadow-md hover:border-brand/30">
                 <h4 className="font-bold text-zinc-800 flex items-center gap-2 mb-2">
-                  <TrendingUp className="w-5 h-5 text-brand bg-purple-50 rounded-lg p-0.5" /> Nuevo Resumen Financiero
+                  <Scissors className="w-5 h-5 text-brand bg-purple-50 rounded-lg p-0.5" /> Múltiples Servicios por Cita
                 </h4>
                 <p className="text-sm text-zinc-500 leading-relaxed">
-                  Expandimos la tarjeta original de ingresos. Ahora tu administrador cuenta con una cuadrícula superior que te informa de tus ganancias de <b>Hoy</b>, la semana actual y de <b>todo el Mes</b>, respetando cualquier ajuste de precio manual que realices.
+                  Ya no estás limitada a un solo servicio por reserva. Tus clientas ahora pueden elegir <b>varios servicios a la vez</b>. El sistema sumará automáticamente todo el tiempo para bloquear la agenda correctamente, y calculará automáticamente el monto a pagar.
                 </p>
               </div>
 
               <div className="bg-white p-5 rounded-2xl border border-zinc-100 shadow-sm transition-all hover:shadow-md hover:border-purple-200">
                 <h4 className="font-bold text-zinc-800 flex items-center gap-2 mb-2">
-                  <DollarSign className="w-5 h-5 text-brand" /> Precio Ajustable por Cita
+                  <Users className="w-5 h-5 text-brand" /> Creación Rápida de Clientas
                 </h4>
                 <p className="text-sm text-zinc-500 leading-relaxed">
-                  Ahora en la pestaña de <b>Gestión de Citas</b>, puedes ingresar un <i>"Precio Ajustado"</i> en caso de que alguna clienta requiera algún servicio extra menor o se le aplique un descuento. Si lo dejas en blanco, el sistema seguirá cobrando el precio original del servicio por defecto.
+                  En la sección de <b>Clientas</b>, ahora dispones del nuevo botón verde <i>"Nuevo"</i>. Esto te permite registrar clientas manualmente al instante para mantener tu base de datos y su contacto a la mano rápidamente sin tener que esperar a que agenden solas.
                 </p>
               </div>
 
               <div className="bg-white p-5 rounded-2xl border border-zinc-100 shadow-sm transition-all">
                 <h4 className="font-bold text-zinc-800 flex items-center gap-2 mb-2">
-                  <Sparkles className="w-5 h-5 text-brand" /> Recordatorio: Estilo Ultra-Premium
+                  <CalendarDays className="w-5 h-5 text-brand" /> Mejoras Rápidas en la Interfaz
                 </h4>
                 <p className="text-sm text-zinc-500 leading-relaxed">
-                  Recuerda que renovamos por completo la estética del administrador. Colores pastel, sombras sofisticadas y <b>animaciones suaves</b> en todos los menús para una experiencia de primer nivel.
+                  Hemos mejorado las selecciones en la creación de citas y refinado la vista de detalles para soportar todas estas nuevas funciones sin perder el estilo premium de tu administrador.
                 </p>
               </div>
             </div>
