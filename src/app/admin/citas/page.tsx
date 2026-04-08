@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale/es';
-import { CalendarDays, Clock, Phone, Pencil, Trash2, CheckCircle2, XCircle, Loader2, Plus, X } from 'lucide-react';
+import { CalendarDays, Clock, Phone, Pencil, Trash2, CheckCircle2, XCircle, Loader2, Plus, X, Search, Scissors, DollarSign } from 'lucide-react';
 import { FadeInOnLoad, StaggerContainerOnLoad, StaggerItem } from "@/components/ui/Animations";
 
 type Cita = {
@@ -451,145 +451,216 @@ export default function CitasAdmin() {
 
       {/* Modal Nueva Cita */}
       {isCreating && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="px-6 py-4 border-b border-zinc-100 flex justify-between items-center bg-zinc-50">
-              <h3 className="font-bold text-lg text-zinc-800">Nueva Reserva Admin</h3>
-              <button type="button" onClick={() => setIsCreating(false)} className="text-zinc-400 hover:text-zinc-600 p-1 rounded-full hover:bg-zinc-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
+            <div className="px-8 py-5 border-b border-zinc-100 flex justify-between items-center bg-white">
+              <div>
+                <h3 className="font-bold text-xl text-zinc-800 font-outfit">Nueva Reserva Admin</h3>
+                <p className="text-sm text-zinc-500 mt-0.5">Agrega una cita manualmente al calendario</p>
+              </div>
+              <button type="button" onClick={() => setIsCreating(false)} className="text-zinc-400 hover:text-zinc-600 p-2 rounded-full hover:bg-zinc-100 transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
             
-            <div className="p-6 overflow-y-auto">
+            <div className="p-8 overflow-y-auto w-full custom-scrollbar">
               {createError && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl">
-                  {createError}
+                <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl flex items-start gap-3">
+                  <XCircle className="w-5 h-5 shrink-0" />
+                  <p className="mt-0.5">{createError}</p>
                 </div>
               )}
               
-              <form id="new-booking-form" onSubmit={submitNewCita} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-zinc-700 mb-1">Nombre del Cliente</label>
-                  <input
-                    type="text"
-                    required
-                    list="clientes-names-list"
-                    value={newCita.nombre}
-                    onChange={e => handleNameSelect(e.target.value)}
-                    className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand focus:border-brand outline-none"
-                    placeholder="Busca o escribe un nombre..."
-                  />
-                  <datalist id="clientes-names-list">
-                    {clientes.map(c => (
-                      <option key={c.id} value={c.nombre}>{c.telefono}</option>
-                    ))}
-                  </datalist>
+              <form id="new-booking-form" onSubmit={submitNewCita} className="space-y-6">
+                
+                {/* Cliente Info */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="space-y-1.5">
+                    <label className="block text-sm font-semibold text-zinc-700">Nombre del Cliente</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                        <Search className="h-4 w-4 text-zinc-400" />
+                      </div>
+                      <input
+                        type="text"
+                        required
+                        list="clientes-names-list"
+                        value={newCita.nombre}
+                        onChange={e => handleNameSelect(e.target.value)}
+                        className="w-full border border-zinc-200 bg-zinc-50 hover:bg-white rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-brand focus:border-brand focus:bg-white transition-all outline-none"
+                        placeholder="Buscar cliente..."
+                      />
+                    </div>
+                    <datalist id="clientes-names-list">
+                      {clientes.map(c => (
+                        <option key={c.id} value={c.nombre}>{c.telefono}</option>
+                      ))}
+                    </datalist>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-sm font-semibold text-zinc-700">Teléfono (WhatsApp)</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                        <Phone className="h-4 w-4 text-zinc-400" />
+                      </div>
+                      <input
+                        type="tel"
+                        required
+                        value={newCita.telefono}
+                        onChange={e => setNewCita(c => ({...c, telefono: e.target.value}))}
+                        className="w-full border border-zinc-200 bg-zinc-50 hover:bg-white rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-brand focus:border-brand focus:bg-white transition-all outline-none"
+                        placeholder="300 000 0000"
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-zinc-700 mb-1">Teléfono (WhatsApp)</label>
-                  <input
-                    type="tel"
-                    required
-                    value={newCita.telefono}
-                    onChange={e => setNewCita(c => ({...c, telefono: e.target.value}))}
-                    className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand focus:border-brand outline-none"
-                    placeholder="Número telefónico"
-                  />
-                </div>
+                <hr className="border-zinc-100" />
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-zinc-700 mb-1">Fecha</label>
+                {/* Fecha y Hora */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="space-y-1.5">
+                    <label className="block text-sm font-semibold text-zinc-700">Fecha</label>
                     <input
                       type="date"
                       required
                       value={newCita.fecha}
                       min={new Date().toISOString().split('T')[0]}
                       onChange={e => setNewCita(c => ({...c, fecha: e.target.value}))}
-                      className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand focus:border-brand outline-none appearance-none min-w-0 bg-white"
+                      className="w-full border border-zinc-200 bg-zinc-50 hover:bg-white rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand focus:border-brand transition-all outline-none appearance-none min-w-0"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-zinc-700 mb-1">Hora</label>
-                    <select
-                      required
-                      value={newCita.hora}
-                      onChange={e => setNewCita(c => ({...c, hora: e.target.value}))}
-                      className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand focus:border-brand outline-none bg-white min-w-0"
-                    >
-                      {TIME_SLOTS.map(t => {
-                        const isOccupied = isSlotOccupied(t);
-                        return (
-                          <option key={t} value={t} disabled={isOccupied}>
-                            {formatTime12h(t)} {isOccupied ? '(Ocupado)' : ''}
-                          </option>
-                        );
-                      })}
-                    </select>
+                  <div className="space-y-1.5">
+                    <label className="block text-sm font-semibold text-zinc-700">Hora</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                        <Clock className="h-4 w-4 text-zinc-400" />
+                      </div>
+                      <select
+                        required
+                        value={newCita.hora}
+                        onChange={e => setNewCita(c => ({...c, hora: e.target.value}))}
+                        className="w-full border border-zinc-200 bg-zinc-50 hover:bg-white rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-brand focus:border-brand transition-all outline-none min-w-0"
+                      >
+                        {TIME_SLOTS.map(t => {
+                          const isOccupied = isSlotOccupied(t);
+                          return (
+                            <option key={t} value={t} disabled={isOccupied} className={isOccupied ? 'text-zinc-400' : ''}>
+                              {formatTime12h(t)} {isOccupied ? '(Ocupado)' : ''}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-zinc-700 mb-1">Servicios (Mantén ctrl/cmd para varios)</label>
-                    <select
-                      multiple
-                      required
-                      size={4}
-                      value={newCita.serviciosIds}
-                      onChange={e => {
-                        const values = Array.from(e.target.selectedOptions, option => option.value);
-                        setNewCita(c => ({...c, serviciosIds: values}));
-                      }}
-                      className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand focus:border-brand outline-none text-sm bg-white"
-                    >
-                      {servicios.map(s => (
-                        <option key={s.id} value={s.id}>{s.nombre} (${s.precio.toLocaleString()})</option>
-                      ))}
-                    </select>
+                <hr className="border-zinc-100" />
+
+                {/* Servicios */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-sm font-semibold text-zinc-700">Servicios a realizar</label>
+                    <span className="text-xs font-medium text-brand bg-brand-light/20 px-2.5 py-1 rounded-full">
+                      {newCita.serviciosIds.length} seleccionado(s)
+                    </span>
                   </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-zinc-700 mb-1">Descuento ($) (Opcional)</label>
-                    <input 
-                      type="number"
-                      value={newCita.precio_ajustado}
-                      onChange={e => setNewCita(c => ({...c, precio_ajustado: e.target.value}))}
-                      className="w-full border-zinc-200 rounded-xl focus:ring-brand focus:border-brand shadow-sm px-3 py-2 text-sm"
-                      placeholder="Ej. 15000"
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-48 overflow-y-auto p-1 custom-scrollbar">
+                    {servicios.map(s => {
+                      const isSelected = newCita.serviciosIds.includes(s.id);
+                      return (
+                        <div 
+                          key={s.id} 
+                          onClick={() => {
+                            setNewCita(c => ({
+                              ...c, 
+                              serviciosIds: isSelected 
+                                ? c.serviciosIds.filter(id => id !== s.id) 
+                                : [...c.serviciosIds, s.id]
+                            }));
+                          }}
+                          className={`cursor-pointer rounded-xl border-2 p-3 transition-all flex flex-col gap-1 select-none ${
+                            isSelected 
+                              ? 'border-brand bg-brand-light/10' 
+                              : 'border-zinc-100 bg-zinc-50 hover:border-zinc-200 hover:bg-white'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <span className={`text-sm font-bold leading-tight ${isSelected ? 'text-brand-dark' : 'text-zinc-700'}`}>
+                              {s.nombre}
+                            </span>
+                            {isSelected && <CheckCircle2 className="w-4 h-4 text-brand shrink-0" />}
+                          </div>
+                          <div className="flex items-center justify-between mt-auto pt-1">
+                            <span className="text-xs font-semibold text-zinc-500">${s.precio.toLocaleString()}</span>
+                            <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400 flex items-center gap-1">
+                              <Clock className="w-3 h-3" /> {s.duracion} min
+                            </span>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-zinc-700 mb-1">Notas especiales</label>
-                  <textarea
-                    value={newCita.notas}
-                    onChange={e => setNewCita(c => ({...c, notas: e.target.value}))}
-                    className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand focus:border-brand outline-none resize-none"
-                    rows={2}
-                    placeholder="Opcional..."
-                  />
+                {/* Extras */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2">
+                  <div className="space-y-1.5">
+                    <label className="block text-sm font-semibold text-zinc-700">Descuento ($) (Opcional)</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                        <DollarSign className="h-4 w-4 text-zinc-400" />
+                      </div>
+                      <input 
+                        type="number"
+                        value={newCita.precio_ajustado}
+                        onChange={e => setNewCita(c => ({...c, precio_ajustado: e.target.value}))}
+                        className="w-full border border-zinc-200 bg-zinc-50 hover:bg-white rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-brand focus:border-brand transition-all outline-none"
+                        placeholder="Ej. 15000"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-1.5">
+                    <label className="block text-sm font-semibold text-zinc-700">Notas especiales</label>
+                    <div className="relative">
+                      <div className="absolute top-3 left-3 pointer-events-none">
+                        <Pencil className="h-4 w-4 text-zinc-400" />
+                      </div>
+                      <textarea
+                        value={newCita.notas}
+                        onChange={e => setNewCita(c => ({...c, notas: e.target.value}))}
+                        className="w-full border border-zinc-200 bg-zinc-50 hover:bg-white rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-brand focus:border-brand transition-all outline-none resize-none"
+                        rows={2}
+                        placeholder="Detalles adicionales..."
+                      />
+                    </div>
+                  </div>
                 </div>
+
               </form>
             </div>
             
-            <div className="px-6 py-4 border-t border-zinc-100 bg-zinc-50 flex justify-end gap-3 shrink-0">
+            <div className="px-8 py-5 border-t border-zinc-100 bg-white flex justify-end gap-3 shrink-0">
               <button 
                 type="button" 
                 onClick={() => setIsCreating(false)}
-                className="px-5 py-2.5 rounded-xl font-semibold text-zinc-600 hover:bg-zinc-200 transition-colors cursor-pointer"
+                className="px-5 py-2.5 rounded-xl font-semibold text-sm text-zinc-600 hover:bg-zinc-100 transition-colors"
               >
                 Cancelar
               </button>
               <button 
-                form="new-booking-form"
                 type="submit" 
-                disabled={isSubmitting}
-                className="px-5 py-2.5 rounded-xl font-bold bg-brand text-white hover:bg-brand-dark transition-all disabled:opacity-50 flex items-center gap-2 cursor-pointer"
+                form="new-booking-form"
+                disabled={isSubmitting || newCita.serviciosIds.length === 0}
+                className="px-6 py-2.5 rounded-xl font-bold text-sm bg-brand text-white hover:bg-brand-dark transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none shadow-md shadow-brand/20 flex items-center gap-2"
               >
-                {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                {isSubmitting ? 'Guardando...' : 'Crear Reserva'}
+                {isSubmitting ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Guardando...</>
+                ) : (
+                  <><CheckCircle2 className="w-4 h-4" /> Crear Reserva</>
+                )}
               </button>
             </div>
           </div>
