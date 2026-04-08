@@ -46,14 +46,14 @@ export default function AdminDashboard() {
     }).finally(() => setLoading(false));
 
     // Check for update modal
-    const hasSeenUpdate = localStorage.getItem('hasSeenUpdatev1.5');
+    const hasSeenUpdate = localStorage.getItem('hasSeenUpdatev2.0');
     if (!hasSeenUpdate) {
       setShowUpdateModal(true);
     }
   }, []);
 
   const dismissUpdateModal = () => {
-    localStorage.setItem('hasSeenUpdatev1.5', 'true');
+    localStorage.setItem('hasSeenUpdatev2.0', 'true');
     setShowUpdateModal(false);
   };
 
@@ -135,10 +135,10 @@ export default function AdminDashboard() {
               <div className="relative z-10">
                 <div className="flex items-center gap-2 text-brand mb-1">
                   <Sparkles className="w-5 h-5 text-brand drop-shadow-md" />
-                  <span className="text-xs font-bold uppercase tracking-widest text-brand-dark">Versión 1.5</span>
+                  <span className="text-xs font-bold uppercase tracking-widest text-brand-dark">Versión 2.0</span>
                 </div>
-                <h3 className="font-bold text-2xl text-brand-dark font-outfit mt-1">¡Nuevas y Grandes Mejoras!</h3>
-                <p className="text-zinc-600 text-sm mt-1 mb-2">Hemos expandido enormemente las capacidades de las citas y clientes.</p>
+                <h3 className="font-bold text-2xl text-brand-dark font-outfit mt-1">¡Sistema Reinventado!</h3>
+                <p className="text-zinc-600 text-sm mt-1 mb-2">Hemos optimizado a fondo el área de reservas con nuevas herramientas y un diseño más limpio.</p>
               </div>
               <button onClick={dismissUpdateModal} className="text-zinc-400 hover:text-zinc-600 p-1.5 rounded-full hover:bg-zinc-100 bg-white shadow-sm relative z-10 transition">
                 <X className="w-5 h-5" />
@@ -148,28 +148,37 @@ export default function AdminDashboard() {
             <div className="p-6 overflow-y-auto bg-zinc-50 space-y-4 max-h-[60vh]">
               <div className="bg-white p-5 rounded-2xl border border-zinc-100 shadow-sm transition-all hover:shadow-md hover:border-brand/30">
                 <h4 className="font-bold text-zinc-800 flex items-center gap-2 mb-2">
-                  <Scissors className="w-5 h-5 text-brand bg-purple-50 rounded-lg p-0.5" /> Múltiples Servicios por Cita
+                  <CalendarDays className="w-5 h-5 text-brand bg-purple-50 rounded-lg p-0.5" /> Sincronización Horaria Perfecta
                 </h4>
                 <p className="text-sm text-zinc-500 leading-relaxed">
-                  Ya no estás limitada a un solo servicio por reserva. Tus clientas ahora pueden elegir <b>varios servicios a la vez</b>. El sistema sumará automáticamente todo el tiempo para bloquear la agenda correctamente, y calculará automáticamente el monto a pagar.
+                  Las reservas ahora están blindadas contra desajustes de zona horaria. Ya no ocurrirán desplazamientos misteriosos de fechas al revisar tu calendario o al agendar para el día siguiente.
+                </p>
+              </div>
+
+              <div className="bg-white p-5 rounded-2xl border border-zinc-100 shadow-sm transition-all hover:shadow-md hover:border-brand/30">
+                <h4 className="font-bold text-zinc-800 flex items-center gap-2 mb-2">
+                  <Clock className="w-5 h-5 text-brand bg-purple-50 rounded-lg p-0.5" /> Bloqueo de Horas Inteligente
+                </h4>
+                <p className="text-sm text-zinc-500 leading-relaxed">
+                  Al crear una cita, el sistema ahora evalúa de manera proactiva qué horas están <b>Ocupadas</b> para evitar solapamientos, garantizando la fluidez de tus sesiones a lo largo del día.
+                </p>
+              </div>
+
+              <div className="bg-white p-5 rounded-2xl border border-zinc-100 shadow-sm transition-all hover:shadow-md hover:border-brand/30">
+                <h4 className="font-bold text-zinc-800 flex items-center gap-2 mb-2">
+                  <DollarSign className="w-5 h-5 text-brand bg-purple-50 rounded-lg p-0.5" /> Descuentos y Cuentas Precisas
+                </h4>
+                <p className="text-sm text-zinc-500 leading-relaxed">
+                  Se ha incoporado una opción de <b>Descuento ($)</b> que recalculará al instante todos los ingresos en la confirmación de la cita, ideal para cortesías o promociones personalizadas.
                 </p>
               </div>
 
               <div className="bg-white p-5 rounded-2xl border border-zinc-100 shadow-sm transition-all hover:shadow-md hover:border-purple-200">
                 <h4 className="font-bold text-zinc-800 flex items-center gap-2 mb-2">
-                  <Users className="w-5 h-5 text-brand" /> Creación Rápida de Clientas
+                  <Sparkles className="w-5 h-5 text-brand" /> Diseño Premium del Modal
                 </h4>
                 <p className="text-sm text-zinc-500 leading-relaxed">
-                  En la sección de <b>Clientas</b>, ahora dispones del nuevo botón verde <i>"Nuevo"</i>. Esto te permite registrar clientas manualmente al instante para mantener tu base de datos y su contacto a la mano rápidamente sin tener que esperar a que agenden solas.
-                </p>
-              </div>
-
-              <div className="bg-white p-5 rounded-2xl border border-zinc-100 shadow-sm transition-all">
-                <h4 className="font-bold text-zinc-800 flex items-center gap-2 mb-2">
-                  <CalendarDays className="w-5 h-5 text-brand" /> Mejoras Rápidas en la Interfaz
-                </h4>
-                <p className="text-sm text-zinc-500 leading-relaxed">
-                  Hemos mejorado las selecciones en la creación de citas y refinado la vista de detalles para soportar todas estas nuevas funciones sin perder el estilo premium de tu administrador.
+                  La interfaz de administrar reservas fue re-diseñada. La aburrida lista múltiple de servicios es ahora un brillante menú de <b>Tarjetas Interactivas</b> en el modal de nueva cita.
                 </p>
               </div>
             </div>
