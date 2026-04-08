@@ -12,8 +12,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Faltan campos obligatorios' }, { status: 400 });
     }
 
-    const timeDate = new Date(`1970-01-01T${hora}:00Z`);
+    const timeDate = new Date();
     const [reqHours, reqMins] = hora.split(':').map(Number);
+    timeDate.setHours(reqHours, reqMins, 0, 0); // Sets exact local time so Prisma extracts the intended wall-clock hours
     const reqStartMin = reqHours * 60 + reqMins;
     
     // Obtenemos los servicios solicitados para saber su duración total
@@ -66,7 +67,8 @@ export async function POST(req: Request) {
     // Create the Cita
     const cita = await (prisma.cita as any).create({
       data: {
-        fecha: new Date(`${fecha.split('T')[0]}T12:00:00.000Z`),
+// Calculate exactly noon local time to prevent backward shift when saved
+        fecha: new Date(new Date(fecha.split('T')[0]).getTime() + 12 * 60 * 60 * 1000),
         hora: timeDate,
         servicios: { connect: serviciosIds.map((id: string) => ({ id })) },
         cliente_id: cliente.id,
@@ -79,7 +81,14 @@ export async function POST(req: Request) {
       }
     });
 
-    return NextResponse.json({ success: true, cita }, { status: 201 });
+    // Format reliably before network
+    const safeCita = {
+      ...cita,
+      fecha: cita.fecha.toISOString().split('T')[0],
+      hora: `${cita.hora.getHours().toString().padStart(2, '0')}:${cita.hora.getMinutes().toString().padStart(2, '0')}`
+    };
+
+    return NextResponse.json({ success: true, cita: safeCita }, { status: 201 });
   } catch (error) {
     console.error('Error creating booking:', error);
     return NextResponse.json({ error: 'Ocurrió un error al reservar la cita' }, { status: 500 });
@@ -113,7 +122,13 @@ export async function GET(req: Request) {
       ]
     });
     
-    return NextResponse.json(bookings);
+    const safeBookings = bookings.map(b => ({
+      ...b,
+      fecha: b.fecha.toISOString().split('T')[0],
+      hora: `${b.hora.getHours().toString().padStart(2, '0')}:${b.hora.getMinutes().toString().padStart(2, '0')}`
+    }));
+
+    return NextResponse.json(safeBookings);
   } catch (error) {
     console.error('Error fetching bookings:', error);
     return NextResponse.json({ error: 'Ocurrió un error al obtener las citas' }, { status: 500 });
