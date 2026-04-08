@@ -102,7 +102,7 @@ export default async function MisCitasPage() {
                     </div>
                     <h3 className="text-2xl font-bold text-zinc-800 font-outfit mb-1">{cita.servicios?.map((s:any)=>s.nombre).join(', ')}</h3>
                     <p className="text-brand font-bold flex items-center gap-1 text-lg">
-                      ${cita.servicios?.reduce((acc:any,s:any)=>acc+s.precio,0).toLocaleString()} <span className="text-sm text-zinc-400 font-medium line-through decoration-transparent ml-2">• {cita.servicios?.reduce((acc:any,s:any)=>acc+s.duracion,0)} min totales</span>
+                      ${cita.servicios?.reduce((acc:any,s:any)=>acc+Number(s.precio),0).toLocaleString()} <span className="text-sm text-zinc-400 font-medium line-through decoration-transparent ml-2">• {cita.servicios?.reduce((acc:any,s:any)=>acc+Number(s.duracion),0)} min totales</span>
                     </p>
                   </div>
 

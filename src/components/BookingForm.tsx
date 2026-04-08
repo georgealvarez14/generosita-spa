@@ -213,7 +213,7 @@ export default function BookingForm() {
                 >
                   <div className="flex justify-between items-start">
                     <h3 className="font-bold text-zinc-800">{s.nombre}</h3>
-                    <span className="text-brand font-bold">${s.precio}</span>
+                    <span className="text-brand font-bold">${Number(s.precio).toLocaleString()}</span>
                   </div>
                   <div className="flex items-center text-xs text-zinc-500 mt-2">
                     <Clock className="w-3.5 h-3.5 mr-1" /> {s.duracion} min
@@ -251,7 +251,7 @@ export default function BookingForm() {
                   const isFullyBooked = dayOcupados.length > 0 && TIME_SLOTS.every(t => {
                     const [h, m] = t.split(':').map(Number);
                     const slotStart = h * 60 + m;
-                    const duracionTotal = selectedServices.reduce((acc, s) => acc + s.duracion, 0) || 60;
+                    const duracionTotal = selectedServices.reduce((acc, s) => acc + Number(s.duracion), 0) || 60;
                     const slotEnd = slotStart + duracionTotal;
                     return dayOcupados.some(o => slotStart < o.endMin && slotEnd > o.startMin);
                   });
@@ -287,7 +287,7 @@ export default function BookingForm() {
                   {TIME_SLOTS.map(t => {
                     const [h, m] = t.split(':').map(Number);
                     const slotStart = h * 60 + m;
-                    const duracionTotal = selectedServices.reduce((acc, s) => acc + s.duracion, 0) || 60;
+                    const duracionTotal = selectedServices.reduce((acc, s) => acc + Number(s.duracion), 0) || 60;
                     const slotEnd = slotStart + duracionTotal;
                     const dateKey = format(selectedDate, 'yyyy-MM-dd');
                     const dayOcupados = ocupacionesPorDia[dateKey] || [];
@@ -338,10 +338,14 @@ export default function BookingForm() {
                    <CalendarIcon className="w-3.5 h-3.5 shadow" /> 
                    {selectedDate && format(selectedDate, "eeee, dd 'de' MMMM", { locale: es })} a las {selectedTime ? formatTime12h(selectedTime) : ''}
                  </p>
+                 <p className="text-zinc-500 font-medium text-sm flex items-center gap-1 mt-1">
+                   <Clock className="w-3.5 h-3.5 shadow-sm" />
+                   Duración aproximada: {selectedServices.reduce((acc, s) => acc + Number(s.duracion), 0)} minutos
+                 </p>
                </div>
                <div className="text-right flex-shrink-0">
                  <p className="text-xs text-zinc-500 uppercase font-bold tracking-wider">A pagar en el local</p>
-                 <p className="text-2xl font-bold text-brand">${selectedServices.reduce((acc, s) => acc + s.precio, 0)}</p>
+                 <p className="text-2xl font-bold text-brand">${selectedServices.reduce((acc, s) => acc + Number(s.precio), 0).toLocaleString()}</p>
                </div>
             </div>
 

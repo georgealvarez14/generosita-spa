@@ -219,11 +219,11 @@ export default function CitasAdmin() {
                     <div className="flex flex-col mt-1">
                        <p className="font-semibold text-brand-dark text-sm leading-tight mb-0.5">{cita.servicios.map(s => s.nombre).join(', ')}</p>
                        <p className="text-xs text-zinc-500 font-medium pb-1">
-                         Duración: {cita.servicios.reduce((acc, s) => acc + s.duracion, 0)}m
+                         Duración: {cita.servicios.reduce((acc, s) => acc + Number(s.duracion), 0)}m
                        </p>
                        <p className="text-xs text-zinc-500 font-medium text-right mt-1">
                          <span className={cita.precio_ajustado !== null ? 'line-through text-zinc-400 mr-1' : ''}>
-                           ${cita.servicios.reduce((acc, s) => acc + s.precio, 0).toLocaleString()}
+                           ${cita.servicios.reduce((acc, s) => acc + Number(s.precio), 0).toLocaleString()}
                          </span>
                          {cita.precio_ajustado !== null && (
                            <span className="text-brand font-bold bg-brand/10 px-1 py-0.5 rounded ml-1">${cita.precio_ajustado.toLocaleString()}</span>
@@ -238,7 +238,7 @@ export default function CitasAdmin() {
                          value={editData.precio_ajustado}
                          onChange={e => setEditData(d => ({ ...d, precio_ajustado: e.target.value }))}
                          className="text-sm border border-zinc-200 rounded-xl px-3 py-2 w-full text-zinc-700 shadow-sm"
-                         placeholder={`Base: $${cita.servicios.reduce((acc, s) => acc + s.precio, 0)}`}
+                         placeholder={`Base: $${cita.servicios.reduce((acc, s) => acc + Number(s.precio), 0).toLocaleString()}`}
                          type="number"
                        />
                        <input
@@ -319,17 +319,17 @@ export default function CitasAdmin() {
                               type="number"
                               value={editData.precio_ajustado}
                               onChange={e => setEditData(d => ({ ...d, precio_ajustado: e.target.value }))}
-                              placeholder={`$${cita.servicios.reduce((acc, s) => acc + s.precio, 0)}`}
+                              placeholder={`$${cita.servicios.reduce((acc, s) => acc + Number(s.precio), 0).toLocaleString()}`}
                               className="w-20 px-1.5 py-1 border border-zinc-200 rounded text-xs mt-1 bg-white"
                             />
                           ) : cita.precio_ajustado !== null ? (
                             <>
-                              <span className="line-through opacity-70">${cita.servicios.reduce((acc, s) => acc + s.precio, 0).toLocaleString()}</span>
+                              <span className="line-through opacity-70">${cita.servicios.reduce((acc, s) => acc + Number(s.precio), 0).toLocaleString()}</span>
                               <span className="text-brand font-bold bg-brand/10 px-1 py-0.5 rounded ml-1">${cita.precio_ajustado.toLocaleString()}</span>
                             </>
                           ) : (
-                            `$${cita.servicios.reduce((acc, s) => acc + s.precio, 0).toLocaleString()}`
-                          )} · {cita.servicios.reduce((acc, s) => acc + s.duracion, 0)} min
+                            `$${cita.servicios.reduce((acc, s) => acc + Number(s.precio), 0).toLocaleString()}`
+                          )} · {cita.servicios.reduce((acc, s) => acc + Number(s.duracion), 0)} min
                         </p>
                       </td>
                       <td className="px-5 py-3.5">

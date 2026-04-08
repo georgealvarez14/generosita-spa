@@ -41,7 +41,7 @@ type Props = { citas: Cita[] };
 // Custom event card shown inside Week/Day views
 function EventCard({ event }: { event: CalendarEvent }) {
   const dur = Math.round((event.end.getTime() - event.start.getTime()) / 60000);
-  const totalPrecio = event.resource.servicios?.reduce((acc, s) => acc + s.precio, 0) || 0;
+  const totalPrecio = event.resource.servicios?.reduce((acc, s) => acc + Number(s.precio), 0) || 0;
   return (
     <div className="h-full overflow-hidden leading-tight">
       <p className="font-bold truncate text-white text-[11px]">{event.resource.cliente.nombre}</p>
@@ -61,7 +61,7 @@ function AgendaEvent({ event }: { event: CalendarEvent }) {
       <div className="flex flex-col gap-0.5 text-sm text-zinc-500 mt-0.5">
         <span className="truncate">{event.resource.servicios?.map(s => s.nombre).join(', ')}</span>
         <div className="flex items-center gap-2">
-          <span className="text-brand font-medium">${event.resource.servicios?.reduce((acc, s) => acc + s.precio, 0).toLocaleString()}</span>
+          <span className="text-brand font-medium">${event.resource.servicios?.reduce((acc, s) => acc + Number(s.precio), 0).toLocaleString()}</span>
           {event.resource.estado_id === 1 ? (
             <span className="text-[10px] font-bold uppercase tracking-wide bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Pendiente</span>
           ) : (
@@ -91,7 +91,7 @@ export default function AdminCalendar({ citas }: Props) {
       hours,
       minutes
     );
-    const duracion = cita.servicios?.reduce((acc, s) => acc + s.duracion, 0) || 60;
+    const duracion = cita.servicios?.reduce((acc, s) => acc + Number(s.duracion), 0) || 60;
     return {
       id: cita.id,
       title: `${cita.cliente.nombre} — ${cita.servicios?.map(s => s.nombre).join(', ')}`,
@@ -217,9 +217,9 @@ export default function AdminCalendar({ citas }: Props) {
                   </p>
                   <p className="font-bold text-zinc-800 leading-tight">{selectedEvent.resource.servicios?.map(s => s.nombre).join(', ')}</p>
                   <p className="text-brand font-bold mt-1.5 flex items-center text-sm gap-0.5">
-                    <DollarSign className="w-3.5 h-3.5" />{selectedEvent.resource.servicios?.reduce((acc, s) => acc + s.precio, 0).toLocaleString()}
+                    <DollarSign className="w-3.5 h-3.5" />{selectedEvent.resource.servicios?.reduce((acc, s) => acc + Number(s.precio), 0).toLocaleString()}
                   </p>
-                  <p className="text-zinc-400 text-xs mt-0.5">{selectedEvent.resource.servicios?.reduce((acc, s) => acc + s.duracion, 0)} minutos totales</p>
+                  <p className="text-zinc-400 text-xs mt-0.5">{selectedEvent.resource.servicios?.reduce((acc, s) => acc + Number(s.duracion), 0)} minutos totales</p>
                 </div>
                 <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-100">
                   <p className="text-xs text-zinc-400 uppercase font-semibold mb-1.5 flex items-center gap-1">
