@@ -11,12 +11,19 @@ const formatTime12h = (timeStr: string | Date) => {
     const timeString = typeof timeStr === 'string' ? timeStr : timeStr.toISOString().split('T')[1]?.substring(0, 5) || '';
     if (!timeString) return '';
     const [h, m] = timeString.split(':').map(Number);
-    const period = h >= 12 ? 'PM' : 'AM';
+    const period = h >= 12 ? 'p. m.' : 'a. m.';
     const hour12 = h % 12 || 12;
     return `${hour12}:${m.toString().padStart(2, '0')} ${period}`;
   } catch(e) {
     return String(timeStr);
   }
+};
+
+const parseFechaLocal = (dateString: string | Date) => {
+  if (!dateString) return new Date();
+  const dStr = typeof dateString === 'string' ? dateString : dateString.toISOString();
+  const [y, m, d] = dStr.split('T')[0].split('-').map(Number);
+  return new Date(y, m - 1, d);
 };
 
 export default async function MisCitasPage() {
@@ -88,7 +95,7 @@ export default async function MisCitasPage() {
             const isCancelled = cita.estado_id === 3;
             // DateTime conversion
             const horaFormat = formatTime12h(cita.hora);
-            const fechaFormat = format(new Date(cita.fecha), "eeee, d 'de' MMMM yyyy", { locale: es });
+            const fechaFormat = format(parseFechaLocal(cita.fecha), "eeee, d 'de' MMMM yyyy", { locale: es });
 
             return (
               <div key={cita.id} className="bg-white rounded-[2rem] p-6 sm:p-8 shadow-sm border border-brand/10 relative overflow-hidden group hover:border-brand/40 transition-colors">
@@ -100,10 +107,21 @@ export default async function MisCitasPage() {
                        {isConfirmed && <span className="bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">Confirmada</span>}
                        {isCancelled && <span className="bg-red-100 text-red-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">Cancelada</span>}
                     </div>
-                    <h3 className="text-2xl font-bold text-zinc-800 font-outfit mb-1">{cita.servicios?.map((s:any)=>s.nombre).join(', ')}</h3>
-                    <p className="text-brand font-bold flex items-center gap-1 text-lg">
-                      ${cita.servicios?.reduce((acc:any,s:any)=>acc+Number(s.precio),0).toLocaleString()} <span className="text-sm text-zinc-400 font-medium line-through decoration-transparent ml-2">• {cita.servicios?.reduce((acc:any,s:any)=>acc+Number(s.duracion),0)} min totales</span>
-                    </p>
+                    <p className="font-bold text-zinc-800 text-lg sm:text-xl capitalize mb-1">{cita.servicios.map((s:any) => s.nombre).join(', ')}</p>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-zinc-500">
+                      <span className="flex items-center gap-1.5 bg-brand-light/20 text-brand px-2.5 py-1 rounded-md font-medium">
+                        <DollarSign className="w-3.5 h-3.5" /> 
+                        {cita.precio_ajustado !== null && cita.precio_ajustado > 0 ? (
+                          <>
+                            ${(cita.servicios.reduce((acc: number, s: any) => acc + Number(s.precio), 0) - cita.precio_ajustado).toLocaleString()}
+                            <span className="text-[10px] font-normal text-rose-500 ml-1">(-${cita.precio_ajustado.toLocaleString()})</span>
+                          </>
+                        ) : (
+                          `$${cita.servicios.reduce((acc: number, s: any) => acc + Number(s.precio), 0).toLocaleString()}`
+                        )}
+                      </span>
+                      <span className="text-sm text-zinc-400 font-medium">• {cita.servicios?.reduce((acc:any,s:any)=>acc+Number(s.duracion),0)} min totales</span>
+                    </div>
                   </div>
 
                   {/* Time Info */}

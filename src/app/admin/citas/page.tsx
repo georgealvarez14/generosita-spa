@@ -126,9 +126,21 @@ export default function CitasAdmin() {
 
   const filtered = filter === 'all' ? citas : citas.filter(c => c.estado_id === filter);
 
-  const formatHora = (h: string) => typeof h === 'string' && h.includes('T')
-    ? new Date(h).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: true })
-    : h;
+  const formatHora = (dateString: string) => {
+    if (!dateString) return '';
+    const timeStr = dateString.includes('T') ? dateString.split('T')[1].substring(0, 5) : dateString;
+    const [hStr, mStr] = timeStr.split(':');
+    let h = parseInt(hStr, 10);
+    const ampm = h >= 12 ? 'p. m.' : 'a. m.';
+    h = h % 12 || 12;
+    return `${h.toString().padStart(2, '0')}:${mStr} ${ampm}`;
+  };
+
+  const parseFechaLocal = (dateString: string) => {
+    if (!dateString) return new Date();
+    const [y, m, d] = dateString.split('T')[0].split('-').map(Number);
+    return new Date(y, m - 1, d);
+  };
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -208,7 +220,7 @@ export default function CitasAdmin() {
                         <CalendarDays className="w-3.5 h-3.5 text-brand" />
                       </div>
                       <p className="font-semibold text-zinc-800 text-sm">
-                        {format(new Date(cita.fecha), 'dd MMM yyyy', { locale: es })}
+                        {format(parseFechaLocal(cita.fecha), 'dd MMM yyyy', { locale: es })}
                       </p>
                       <span className="text-zinc-300">•</span>
                       <p className="font-medium text-zinc-600 text-sm flex items-center gap-1">
@@ -341,10 +353,10 @@ export default function CitasAdmin() {
                       <td className="px-5 py-3.5">
                         <p className="font-medium text-zinc-800 flex items-center gap-1.5">
                           <CalendarDays className="w-3.5 h-3.5 text-brand shrink-0" />
-                          {format(new Date(cita.fecha), 'dd MMM yyyy', { locale: es })}
+                          {format(parseFechaLocal(cita.fecha), 'dd MMM yyyy', { locale: es })}
                         </p>
                         <p className="text-xs text-zinc-500 flex items-center gap-1.5 mt-0.5">
-                          <Clock className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                          <Clock className="w-3.5 h-3.5 shrink-0" />
                           {formatHora(cita.hora)}
                         </p>
                       </td>

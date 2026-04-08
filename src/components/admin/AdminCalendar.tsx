@@ -85,17 +85,13 @@ export default function AdminCalendar({ citas }: Props) {
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
   const calendarEvents: CalendarEvent[] = citas.map((cita) => {
-    const baseDate = new Date(cita.fecha);
-    const timeDate = new Date(cita.hora);
-    const hours = timeDate.getUTCHours();
-    const minutes = timeDate.getUTCMinutes();
-    const startDate = new Date(
-      baseDate.getUTCFullYear(),
-      baseDate.getUTCMonth(),
-      baseDate.getUTCDate(),
-      hours,
-      minutes
-    );
+    // Manually parse strings to avoid navigator timezone offsets shifting dates randomly
+    const [y, m, d] = cita.fecha.split('T')[0].split('-').map(Number);
+    const timeStr = cita.hora.includes('T') ? cita.hora.split('T')[1].substring(0, 5) : cita.hora;
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    
+    // Construct local Date explicitly pointing to the intended visual time
+    const startDate = new Date(y, m - 1, d, hours, minutes);
     const duracion = cita.servicios?.reduce((acc, s) => acc + Number(s.duracion), 0) || 60;
     return {
       id: cita.id,
