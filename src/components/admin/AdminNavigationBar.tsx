@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, CalendarDays, Scissors, Users, ImageIcon, Menu, X, ExternalLink, User as UserIcon } from 'lucide-react';
 import LogoutButton from './LogoutButton';
@@ -39,23 +40,24 @@ export default function AdminNavigationBar({ children }: { children: React.React
             <Menu className="w-6 h-6" />
           </button>
           
-          <Link href="/admin" className="font-outfit text-xl font-bold flex items-center gap-2.5 text-brand-dark group">
-            <span className="bg-gradient-to-br from-brand to-pink-500 text-white w-8 h-8 rounded-xl flex items-center justify-center font-black text-sm shadow-md group-hover:scale-105 transition-transform">G</span>
+          <Link href="/admin" className="font-outfit text-xl font-bold flex items-center gap-3 text-brand-dark group">
+            <div className="relative w-10 h-10 group-hover:scale-105 transition-transform flex-shrink-0">
+              <Image src="/logo.png" alt="Generosita SPA Logo" fill className="object-contain" />
+            </div>
             <span className="hidden sm:inline">Generosita SPA</span>
           </Link>
-          <span className="bg-purple-100 text-brand-dark font-semibold px-2 py-0.5 rounded-md text-[10px] hidden sm:block uppercase tracking-wider">Admin</span>
+          <span className="bg-purple-100 text-brand-dark font-bold px-2 py-1 rounded-md text-[10px] hidden sm:block uppercase tracking-widest ml-1">Admin</span>
         </div>
-        <div className="flex items-center gap-2 sm:gap-4">
-          <Link href="/portal" className="text-zinc-500 hover:text-brand text-sm font-medium transition-colors flex items-center gap-1.5" title="Mi Perfil">
-            <UserIcon className="w-4 h-4" />
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Link href="/portal" className="text-brand-dark hover:text-white bg-brand-light/20 hover:bg-brand text-[13px] font-bold transition-all flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-transparent hover:border-brand-dark hover:shadow-md" title="Mi Perfil">
+            <UserIcon className="w-3.5 h-3.5" />
             <span className="hidden lg:inline">Mi Perfil</span>
           </Link>
-          <div className="w-px h-4 bg-purple-200 mx-1 hidden sm:block"></div>
-          <Link href="/" className="text-zinc-500 hover:text-brand text-sm font-medium transition-colors flex items-center gap-1.5" title="Ver sitio web">
-            <ExternalLink className="w-4 h-4" />
+          <Link href="/" target="_blank" className="text-zinc-600 hover:text-brand-dark bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 text-[13px] font-bold transition-all flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:shadow-sm" title="Ver sitio web">
+            <ExternalLink className="w-3.5 h-3.5" />
             <span className="hidden lg:inline">Ver sitio web</span>
           </Link>
-          <div className="w-px h-4 bg-purple-200 mx-1 hidden sm:block"></div>
+          <div className="w-px h-5 bg-zinc-200 mx-1 hidden sm:block"></div>
           <LogoutButton />
         </div>
       </header>
@@ -104,7 +106,9 @@ export default function AdminNavigationBar({ children }: { children: React.React
           <aside className="relative flex w-[280px] max-w-[85vw] flex-col overflow-y-auto bg-white shadow-2xl animate-in slide-in-from-left duration-300">
             <div className="flex items-center justify-between px-6 h-20 bg-gradient-to-br from-brand-light/30 to-brand-bg border-b border-purple-100">
               <span className="font-outfit font-bold text-xl text-brand-dark flex items-center gap-2.5">
-                 <span className="bg-gradient-to-br from-brand to-pink-500 text-white w-8 h-8 rounded-xl flex items-center justify-center font-black text-sm shadow-md">G</span>
+                 <div className="relative w-8 h-8">
+                   <Image src="/logo.png" alt="Generosita SPA Logo" fill className="object-contain" />
+                 </div>
                  Admin
               </span>
               <button 
