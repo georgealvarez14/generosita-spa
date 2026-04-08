@@ -26,7 +26,7 @@ export async function GET(req: Request) {
         estado_id: { not: 3 }
       },
       include: {
-        servicio: true
+        servicios: true
       }
     });
 
@@ -41,11 +41,11 @@ export async function GET(req: Request) {
       const dy = String(cita.fecha.getUTCDate()).padStart(2, '0');
       const fechaClave = `${y}-${mo}-${dy}`;
       
-      const horaStr = cita.hora.toISOString().split('T')[1].substring(0, 5);
-      const [horas, minutos] = horaStr.split(':').map(Number);
+      const horas = cita.hora.getHours();
+      const minutos = cita.hora.getMinutes();
       
       const startMin = horas * 60 + minutos;
-      const endMin = startMin + (cita.servicio?.duracion || 60);
+      const endMin = startMin + (cita.servicios?.reduce((acc: number, s: any) => acc + s.duracion, 0) || 60);
 
       if (!ocupacionesPorDia[fechaClave]) {
         ocupacionesPorDia[fechaClave] = [];

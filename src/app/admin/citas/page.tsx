@@ -142,6 +142,34 @@ export default function CitasAdmin() {
     return new Date(y, m - 1, d);
   };
 
+  const isSlotOccupied = (t: string) => {
+    if (!newCita.fecha) return false;
+    const [reqHours, reqMins] = t.split(':').map(Number);
+    const reqStartMin = reqHours * 60 + reqMins;
+    
+    // sum selected services duration for overlap check
+    const newDuracion = servicios
+      .filter(s => newCita.serviciosIds.includes(s.id))
+      .reduce((acc, s) => acc + s.duracion, 0) || 60;
+    const reqEndMin = reqStartMin + newDuracion;
+    
+    return citas.some(cita => {
+      // filter only confirmed/pending citas on the same day
+      if (cita.estado_id === 3 || cita.estado_id === 4) return false;
+      const [y, m, d] = cita.fecha.split('T')[0].split('-').map(Number);
+      const [nY, nM, nD] = newCita.fecha.split('T')[0].split('-').map(Number);
+      if (y !== nY || m !== nM || d !== nD) return false;
+
+      const timeStr = cita.hora.includes('T') ? cita.hora.split('T')[1].substring(0, 5) : cita.hora;
+      const [hStr, mStr] = timeStr.split(':');
+      const startMin = parseInt(hStr, 10) * 60 + parseInt(mStr, 10);
+      const endMin = startMin + (cita.servicios?.reduce((acc, s) => acc + s.duracion, 0) || 60);
+
+      // Overlap logic
+      return reqStartMin < endMin && reqEndMin > startMin;
+    });
+  };
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <FadeInOnLoad className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -490,9 +518,14 @@ export default function CitasAdmin() {
                       onChange={e => setNewCita(c => ({...c, hora: e.target.value}))}
                       className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand focus:border-brand outline-none bg-white min-w-0"
                     >
-                      {TIME_SLOTS.map(t => (
-                        <option key={t} value={t}>{formatTime12h(t)}</option>
-                      ))}
+                      {TIME_SLOTS.map(t => {
+                        const isOccupied = isSlotOccupied(t);
+                        return (
+                          <option key={t} value={t} disabled={isOccupied}>
+                            {formatTime12h(t)} {isOccupied ? '(Ocupado)' : ''}
+                          </option>
+                        );
+                      })}
                     </select>
                   </div>
                 </div>
