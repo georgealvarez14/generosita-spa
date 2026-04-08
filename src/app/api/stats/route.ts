@@ -27,7 +27,7 @@ export async function GET() {
     // Estimated revenue: sum of prices for non-cancelled bookings (estado_id !== 3)
     const citasParaIngresos = await (prisma.cita as any).findMany({
       where: { estado_id: { not: 3 } },
-      include: { servicio: { select: { precio: true } } },
+      include: { servicios: { select: { precio: true } } },
     });
 
     const now = new Date();
@@ -43,7 +43,7 @@ export async function GET() {
       d.setHours(0,0,0,0);
       const precioFinal = c.precio_ajustado !== null && c.precio_ajustado !== undefined 
         ? c.precio_ajustado 
-        : (c.servicio?.precio ?? 0);
+        : (c.servicios?.reduce((acc: number, s: any) => acc + s.precio, 0) ?? 0);
 
       if (d.getTime() === todayStart.getTime()) ingresos.hoy += precioFinal;
       if (d >= weekStart) ingresos.semana += precioFinal;
