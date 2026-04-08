@@ -222,11 +222,14 @@ export default function CitasAdmin() {
                          Duración: {cita.servicios.reduce((acc, s) => acc + Number(s.duracion), 0)}m
                        </p>
                        <p className="text-xs text-zinc-500 font-medium text-right mt-1">
-                         <span className={cita.precio_ajustado !== null ? 'line-through text-zinc-400 mr-1' : ''}>
+                         <span className={cita.precio_ajustado !== null && cita.precio_ajustado > 0 ? 'line-through text-zinc-400 mr-1' : ''}>
                            ${cita.servicios.reduce((acc, s) => acc + Number(s.precio), 0).toLocaleString()}
                          </span>
-                         {cita.precio_ajustado !== null && (
-                           <span className="text-brand font-bold bg-brand/10 px-1 py-0.5 rounded ml-1">${cita.precio_ajustado.toLocaleString()}</span>
+                         {cita.precio_ajustado !== null && cita.precio_ajustado > 0 && (
+                           <span className="text-brand font-bold bg-brand/10 px-1.5 py-0.5 rounded ml-1">
+                             ${(cita.servicios.reduce((acc, s) => acc + Number(s.precio), 0) - cita.precio_ajustado).toLocaleString()} 
+                             <span className="text-[10px] font-normal text-rose-500 ml-1">(-${cita.precio_ajustado.toLocaleString()})</span>
+                           </span>
                          )}
                        </p>
                     </div>
@@ -238,7 +241,7 @@ export default function CitasAdmin() {
                          value={editData.precio_ajustado}
                          onChange={e => setEditData(d => ({ ...d, precio_ajustado: e.target.value }))}
                          className="text-sm border border-zinc-200 rounded-xl px-3 py-2 w-full text-zinc-700 shadow-sm"
-                         placeholder={`Base: $${cita.servicios.reduce((acc, s) => acc + Number(s.precio), 0).toLocaleString()}`}
+                         placeholder={`Dcto ($)`}
                          type="number"
                        />
                        <input
@@ -319,13 +322,16 @@ export default function CitasAdmin() {
                               type="number"
                               value={editData.precio_ajustado}
                               onChange={e => setEditData(d => ({ ...d, precio_ajustado: e.target.value }))}
-                              placeholder={`$${cita.servicios.reduce((acc, s) => acc + Number(s.precio), 0).toLocaleString()}`}
+                              placeholder={`Dcto ($)`}
                               className="w-20 px-1.5 py-1 border border-zinc-200 rounded text-xs mt-1 bg-white"
                             />
-                          ) : cita.precio_ajustado !== null ? (
+                          ) : cita.precio_ajustado !== null && cita.precio_ajustado > 0 ? (
                             <>
                               <span className="line-through opacity-70">${cita.servicios.reduce((acc, s) => acc + Number(s.precio), 0).toLocaleString()}</span>
-                              <span className="text-brand font-bold bg-brand/10 px-1 py-0.5 rounded ml-1">${cita.precio_ajustado.toLocaleString()}</span>
+                              <span className="text-brand font-bold bg-brand/10 px-1.5 py-0.5 rounded ml-1">
+                                ${(cita.servicios.reduce((acc, s) => acc + Number(s.precio), 0) - cita.precio_ajustado).toLocaleString()} 
+                                <span className="text-[10px] font-normal text-rose-500 ml-1">(-${cita.precio_ajustado.toLocaleString()})</span>
+                              </span>
                             </>
                           ) : (
                             `$${cita.servicios.reduce((acc, s) => acc + Number(s.precio), 0).toLocaleString()}`
@@ -499,13 +505,13 @@ export default function CitasAdmin() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-zinc-700 mb-1">Precio Ajustado</label>
-                    <input
+                    <label className="block text-sm font-semibold text-zinc-700 mb-1">Descuento ($) (Opcional)</label>
+                    <input 
                       type="number"
                       value={newCita.precio_ajustado}
                       onChange={e => setNewCita(c => ({...c, precio_ajustado: e.target.value}))}
-                      className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand focus:border-brand outline-none"
-                      placeholder="Dejar en blanco para valor base"
+                      className="w-full border-zinc-200 rounded-xl focus:ring-brand focus:border-brand shadow-sm px-3 py-2 text-sm"
+                      placeholder="Ej. 15000"
                     />
                   </div>
                 </div>

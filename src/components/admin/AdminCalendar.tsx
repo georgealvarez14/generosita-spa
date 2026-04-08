@@ -25,6 +25,7 @@ type Cita = {
   estado_id: number;
   notas: string | null;
   cliente: { nombre: string; telefono: string };
+  precio_ajustado?: number | null;
   servicios: { nombre: string; precio: number; duracion: number }[];
 };
 
@@ -41,7 +42,9 @@ type Props = { citas: Cita[] };
 // Custom event card shown inside Week/Day views
 function EventCard({ event }: { event: CalendarEvent }) {
   const dur = Math.round((event.end.getTime() - event.start.getTime()) / 60000);
-  const totalPrecio = event.resource.servicios?.reduce((acc, s) => acc + Number(s.precio), 0) || 0;
+  const baseValue = event.resource.servicios?.reduce((acc, s) => acc + Number(s.precio), 0) || 0;
+  const dto = event.resource.precio_ajustado || 0;
+  const totalPrecio = baseValue - dto;
   return (
     <div className="h-full overflow-hidden leading-tight">
       <p className="font-bold truncate text-white text-[11px]">{event.resource.cliente.nombre}</p>
@@ -61,7 +64,9 @@ function AgendaEvent({ event }: { event: CalendarEvent }) {
       <div className="flex flex-col gap-0.5 text-sm text-zinc-500 mt-0.5">
         <span className="truncate">{event.resource.servicios?.map(s => s.nombre).join(', ')}</span>
         <div className="flex items-center gap-2">
-          <span className="text-brand font-medium">${event.resource.servicios?.reduce((acc, s) => acc + Number(s.precio), 0).toLocaleString()}</span>
+          <span className="text-brand font-medium">
+            ${(event.resource.servicios?.reduce((acc, s) => acc + Number(s.precio), 0) - (event.resource.precio_ajustado || 0)).toLocaleString()}
+          </span>
           {event.resource.estado_id === 1 ? (
             <span className="text-[10px] font-bold uppercase tracking-wide bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Pendiente</span>
           ) : (
@@ -217,7 +222,9 @@ export default function AdminCalendar({ citas }: Props) {
                   </p>
                   <p className="font-bold text-zinc-800 leading-tight">{selectedEvent.resource.servicios?.map(s => s.nombre).join(', ')}</p>
                   <p className="text-brand font-bold mt-1.5 flex items-center text-sm gap-0.5">
-                    <DollarSign className="w-3.5 h-3.5" />{selectedEvent.resource.servicios?.reduce((acc, s) => acc + Number(s.precio), 0).toLocaleString()}
+                    <DollarSign className="w-3.5 h-3.5" />
+                    {(selectedEvent.resource.servicios?.reduce((acc, s) => acc + Number(s.precio), 0) - (selectedEvent.resource.precio_ajustado || 0)).toLocaleString()}
+                    {selectedEvent.resource.precio_ajustado ? <span className="text-[10px] font-normal text-rose-500 ml-1">(-${selectedEvent.resource.precio_ajustado.toLocaleString()})</span> : null}
                   </p>
                   <p className="text-zinc-400 text-xs mt-0.5">{selectedEvent.resource.servicios?.reduce((acc, s) => acc + Number(s.duracion), 0)} minutos totales</p>
                 </div>

@@ -134,7 +134,7 @@ export default function BookingForm() {
         body: JSON.stringify({
           nombre: formData.nombre,
           telefono: formData.telefono,
-          fecha: selectedDate?.toISOString(),
+          fecha: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined,
           hora: selectedTime,
           serviciosIds: selectedServices.map(s => s.id),
           notas: formData.notas
@@ -253,7 +253,13 @@ export default function BookingForm() {
                     const slotStart = h * 60 + m;
                     const duracionTotal = selectedServices.reduce((acc, s) => acc + Number(s.duracion), 0) || 60;
                     const slotEnd = slotStart + duracionTotal;
-                    return dayOcupados.some(o => slotStart < o.endMin && slotEnd > o.startMin);
+                    
+                    const now = new Date();
+                    const isToday = isSameDay(d, now);
+                    const currentMin = now.getHours() * 60 + now.getMinutes();
+                    const isPast = isToday && slotStart <= currentMin;
+
+                    return isPast || dayOcupados.some(o => slotStart < o.endMin && slotEnd > o.startMin);
                   });
 
                   return (
@@ -292,8 +298,13 @@ export default function BookingForm() {
                     const dateKey = format(selectedDate, 'yyyy-MM-dd');
                     const dayOcupados = ocupacionesPorDia[dateKey] || [];
                     
+                    const now = new Date();
+                    const isToday = isSameDay(selectedDate, now);
+                    const currentMin = now.getHours() * 60 + now.getMinutes();
+                    const isPast = isToday && slotStart <= currentMin;
+
                     // Overlap logic: proposed Start is before occupied End AND proposed End is after occupied Start
-                    const isOccupied = dayOcupados.some(o => slotStart < o.endMin && slotEnd > o.startMin);
+                    const isOccupied = isPast || dayOcupados.some(o => slotStart < o.endMin && slotEnd > o.startMin);
                     
                     return (
                       <button

@@ -66,7 +66,7 @@ export async function POST(req: Request) {
     // Create the Cita
     const cita = await (prisma.cita as any).create({
       data: {
-        fecha: new Date(fecha),
+        fecha: new Date(`${fecha.split('T')[0]}T12:00:00.000Z`),
         hora: timeDate,
         servicios: { connect: serviciosIds.map((id: string) => ({ id })) },
         cliente_id: cliente.id,

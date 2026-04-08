@@ -41,9 +41,9 @@ export async function GET() {
     citasParaIngresos.forEach((c: any) => {
       const d = new Date(c.fecha);
       d.setHours(0,0,0,0);
-      const precioFinal = c.precio_ajustado !== null && c.precio_ajustado !== undefined 
-        ? c.precio_ajustado 
-        : (c.servicios?.reduce((acc: number, s: any) => acc + s.precio, 0) ?? 0);
+      const basePrice = c.servicios?.reduce((acc: number, s: any) => acc + Number(s.precio), 0) ?? 0;
+      const dto = c.precio_ajustado || 0;
+      const precioFinal = basePrice - dto;
 
       if (d.getTime() === todayStart.getTime()) ingresos.hoy += precioFinal;
       if (d >= weekStart) ingresos.semana += precioFinal;
