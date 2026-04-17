@@ -4,11 +4,12 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, CalendarDays, Scissors, Users, ImageIcon, Menu, X, ExternalLink, User as UserIcon } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, Scissors, Users, ImageIcon, Menu, X, ExternalLink, User as UserIcon, BarChart2 } from 'lucide-react';
 import LogoutButton from './LogoutButton';
 
 const navItems = [
   { href: '/admin', label: 'Inicio', icon: LayoutDashboard, exact: true },
+  { href: '/admin/dashboard', label: 'Dashboard', icon: BarChart2, exact: false },
   { href: '/admin/citas', label: 'Citas', icon: CalendarDays, exact: false },
   { href: '/admin/servicios', label: 'Servicios', icon: Scissors, exact: false },
   { href: '/admin/clientes', label: 'Clientas', icon: Users, exact: false },
