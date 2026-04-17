@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale/es';
-import { CalendarDays, Clock, Phone, Pencil, Trash2, CheckCircle2, XCircle, Loader2, Plus, X, Search, Scissors, DollarSign } from 'lucide-react';
+import { CalendarDays, Clock, Phone, Pencil, Trash2, CheckCircle2, XCircle, Loader2, Plus, X, Search, DollarSign } from 'lucide-react';
 import { FadeInOnLoad, StaggerContainerOnLoad, StaggerItem } from "@/components/ui/Animations";
 
 type Cita = {
@@ -107,8 +107,8 @@ export default function CitasAdmin() {
       setIsCreating(false);
       setNewCita({ nombre: '', telefono: '', fecha: '', hora: '09:00', serviciosIds: [], notas: '', precio_ajustado: '' });
       load();
-    } catch (err: any) {
-      setCreateError(err.message);
+    } catch (err: unknown) {
+      setCreateError(err instanceof Error ? err.message : 'Error al crear cita');
     } finally {
       setIsSubmitting(false);
     }
@@ -184,7 +184,7 @@ export default function CitasAdmin() {
             {[{ id: 'all', label: 'Todas' }, ...ESTADOS].map(e => (
               <button
                 key={e.id}
-                onClick={() => setFilter(e.id as any)}
+                onClick={() => setFilter(e.id as number | 'all')}
                 className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   filter === e.id ? 'bg-brand text-white shadow-md shadow-brand/20' : 'text-zinc-500 hover:bg-purple-50 hover:text-brand'
                 }`}

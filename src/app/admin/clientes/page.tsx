@@ -47,8 +47,8 @@ export default function ClientasAdmin() {
       setIsCreating(false);
       setNewClient({ nombre: '', telefono: '', email: '' });
       load();
-    } catch (err: any) {
-      setCreateError(err.message);
+    } catch (err: unknown) {
+      setCreateError(err instanceof Error ? err.message : 'Error al crear clienta');
     } finally {
       setIsSubmitting(false);
     }

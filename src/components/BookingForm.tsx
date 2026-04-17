@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, Clock, CheckCircle2, ChevronRight, User, Phone, MapPin, Search, ArrowRight } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, CheckCircle2, ChevronRight, User, Phone, MapPin, ArrowRight } from 'lucide-react';
 import { format, addDays, isSameDay, startOfDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { createClient } from '@/utils/supabase/client';
@@ -150,8 +150,8 @@ export default function BookingForm() {
       // Move to success step
       setStep(4);
       
-    } catch (err: any) {
-      setErrorLine(err.message);
+    } catch (err: unknown) {
+      setErrorLine(err instanceof Error ? err.message : 'Error inesperado');
     } finally {
       setIsSubmitting(false);
     }

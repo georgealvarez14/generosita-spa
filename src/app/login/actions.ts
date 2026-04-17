@@ -3,7 +3,7 @@
 import { prisma } from '@/lib/prisma';
 
 export async function syncUserProfile(
-  user: { id: string; email: string; user_metadata?: any },
+  user: { id: string; email: string; user_metadata?: Record<string, string> },
   options?: { nombre?: string; telefono?: string; password?: string }
 ) {
   try {
@@ -41,8 +41,9 @@ export async function syncUserProfile(
     }
     
     return { success: true, profile };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error syncing profile to db:", error);
-    return { success: false, error: error.message };
+    const message = error instanceof Error ? error.message : 'Error desconocido';
+    return { success: false, error: message };
   }
 }

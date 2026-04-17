@@ -66,8 +66,8 @@ export default function AdminLogin() {
       } else {
         router.push('/portal'); // Portal del cliente
       }
-    } catch (err: any) {
-      setError('Error inesperado: ' + err.message);
+    } catch (err: unknown) {
+      setError('Error inesperado: ' + (err instanceof Error ? err.message : 'intenta de nuevo'));
     } finally {
       setLoading(false);
     }

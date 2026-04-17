@@ -1,91 +1,92 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import {
+  parseTimeToMinutes,
+  formatHoraFromDate,
+  formatFechaFromDate,
+  createNoonUTCDate,
+  isTimeOverlapping,
+  parsePrecioAjustado,
+} from '@/lib/bookingUtils';
+import type { CitaConServicios } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { nombre, telefono, email, fecha, hora, serviciosIds, notas, precio_ajustado } = body;
+    const { nombre, telefono, email, fecha, hora, serviciosIds, notas, precio_ajustado } = body as {
+      nombre: string;
+      telefono: string;
+      email?: string;
+      fecha: string;
+      hora: string;
+      serviciosIds: string[];
+      notas?: string;
+      precio_ajustado?: string | number | null;
+    };
 
-    if (!nombre || !telefono || !fecha || !hora || !serviciosIds || !Array.isArray(serviciosIds) || serviciosIds.length === 0) {
+    if (!nombre || !telefono || !fecha || !hora || !Array.isArray(serviciosIds) || serviciosIds.length === 0) {
       return NextResponse.json({ error: 'Faltan campos obligatorios' }, { status: 400 });
     }
 
-    const timeDate = new Date();
     const [reqHours, reqMins] = hora.split(':').map(Number);
-    timeDate.setHours(reqHours, reqMins, 0, 0); // Sets exact local time so Prisma extracts the intended wall-clock hours
-    const reqStartMin = reqHours * 60 + reqMins;
-    
-    // Obtenemos los servicios solicitados para saber su duración total
-    const serviciosSolicitados = await prisma.servicio.findMany({ where: { id: { in: serviciosIds } }});
+    const timeDate = new Date();
+    timeDate.setHours(reqHours, reqMins, 0, 0); // exact wall-clock hours for Prisma TIME column
+
+    const reqStartMin = parseTimeToMinutes(hora);
+
+    const serviciosSolicitados = await prisma.servicio.findMany({ where: { id: { in: serviciosIds } } });
     const duracionSolicitada = serviciosSolicitados.reduce((acc, s) => acc + s.duracion, 0) || 60;
     const reqEndMin = reqStartMin + duracionSolicitada;
 
-    // Use robust date boundaries to capture all appointments that land on the same calendar day
-    const baseDateString = new Date(fecha).toISOString().split('T')[0]; // "YYYY-MM-DD"
+    const baseDateString = new Date(fecha).toISOString().split('T')[0];
     const dayStart = new Date(`${baseDateString}T00:00:00.000Z`);
     const dayEnd = new Date(`${baseDateString}T23:59:59.999Z`);
 
-    // Check availability against all appointments that day
-    const citasDelDia = await (prisma.cita as any).findMany({
+    const citasDelDia = await prisma.cita.findMany({
       where: {
-        fecha: {
-          gte: dayStart,
-          lte: dayEnd
-        },
-        estado_id: { not: 3 } // no contar canceladas
+        fecha: { gte: dayStart, lte: dayEnd },
+        estado_id: { not: 3 },
       },
-      include: { servicios: true }
+      include: { servicios: true },
+    }) as unknown as CitaConServicios[];
+
+    const overlapping = citasDelDia.some((cita) => {
+      const horaStr = cita.hora.toISOString().split('T')[1].substring(0, 5);
+      const existingStart = parseTimeToMinutes(horaStr);
+      const existingEnd = existingStart + (cita.servicios.reduce((acc, s) => acc + s.duracion, 0) || 60);
+      return isTimeOverlapping(reqStartMin, reqEndMin, existingStart, existingEnd);
     });
 
-    const isOverlapping = citasDelDia.some((cita: any) => {
-      const horaStr = cita.hora.toISOString().split('T')[1].substring(0, 5); 
-      const [h, m] = horaStr.split(':').map(Number);
-      const startMin = h * 60 + m;
-      const endMin = startMin + (cita.servicios?.reduce((acc: number, s: any) => acc + s.duracion, 0) || 60);
-      
-      return reqStartMin < endMin && reqEndMin > startMin;
-    });
-
-    if (isOverlapping) {
+    if (overlapping) {
       return NextResponse.json({ error: 'El horario seleccionado choca con otra cita existente.' }, { status: 400 });
     }
 
-    // Ensure client exists or create one
     let cliente = await prisma.cliente.findFirst({ where: { telefono } });
     if (!cliente) {
       cliente = await prisma.cliente.create({
-        data: {
-          nombre,
-          telefono,
-          email: email || null,
-        }
+        data: { nombre, telefono, email: email || null },
       });
     }
 
-    // Create the Cita
-    const cita = await (prisma.cita as any).create({
+    const cita = await prisma.cita.create({
       data: {
-// Calculate exactly noon local time to prevent backward shift when saved
-        fecha: new Date(new Date(fecha.split('T')[0]).getTime() + 12 * 60 * 60 * 1000),
+        fecha: createNoonUTCDate(fecha), // noon UTC prevents backward date shift
         hora: timeDate,
-        servicios: { connect: serviciosIds.map((id: string) => ({ id })) },
+        servicios: { connect: serviciosIds.map((id) => ({ id })) },
         cliente_id: cliente.id,
         notas: notas || null,
-        precio_ajustado: (precio_ajustado === '' || precio_ajustado === null || precio_ajustado === undefined || isNaN(Number(precio_ajustado))) ? null : Number(precio_ajustado),
-        estado_id: 1, // 1 = pendiente en estado_cita
+        precio_ajustado: parsePrecioAjustado(precio_ajustado),
+        estado_id: 1,
       },
-      include: {
-        servicios: true,
-      }
-    });
+      include: { servicios: true },
+    }) as unknown as CitaConServicios;
 
-    // Format reliably before network
     const safeCita = {
       ...cita,
-      fecha: cita.fecha.toISOString().split('T')[0],
-      hora: `${cita.hora.getHours().toString().padStart(2, '0')}:${cita.hora.getMinutes().toString().padStart(2, '0')}`
+      fecha: formatFechaFromDate(cita.fecha),
+      hora: formatHoraFromDate(cita.hora),
     };
 
     return NextResponse.json({ success: true, cita: safeCita }, { status: 201 });
@@ -101,9 +102,6 @@ export async function GET(req: Request) {
     const dateQuery = searchParams.get('date');
     const all = searchParams.get('all') === 'true';
 
-    // 'all=true' → no date filter (used by admin citas page)
-    // 'date=...' → specific date filter
-    // default → future citas only
     const whereClause = all
       ? {}
       : dateQuery
@@ -112,20 +110,14 @@ export async function GET(req: Request) {
 
     const bookings = await prisma.cita.findMany({
       where: whereClause,
-      include: {
-        cliente: true,
-        servicios: true,
-      },
-      orderBy: [
-        { fecha: 'desc' },
-        { hora: 'desc' }
-      ]
-    });
-    
-    const safeBookings = bookings.map(b => ({
+      include: { cliente: true, servicios: true },
+      orderBy: [{ fecha: 'desc' }, { hora: 'desc' }],
+    }) as unknown as (CitaConServicios & { cliente: { nombre: string; telefono: string; email: string | null } })[];
+
+    const safeBookings = bookings.map((b) => ({
       ...b,
-      fecha: b.fecha.toISOString().split('T')[0],
-      hora: `${b.hora.getHours().toString().padStart(2, '0')}:${b.hora.getMinutes().toString().padStart(2, '0')}`
+      fecha: formatFechaFromDate(b.fecha),
+      hora: formatHoraFromDate(b.hora),
     }));
 
     return NextResponse.json(safeBookings);

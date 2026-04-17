@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Sparkles, Star, CalendarHeart, Clock, MapPin, Phone, User } from "lucide-react";
+import { ArrowRight, Sparkles, Star, CalendarHeart, Clock, MapPin, User } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/ui/Animations";

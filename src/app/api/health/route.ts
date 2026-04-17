@@ -27,10 +27,8 @@ export async function GET() {
       status: 'ok',
       message: 'Conexión a Supabase exitosa'
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { status: 'error', message: 'Error: ' + error.message },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Error desconocido';
+    return NextResponse.json({ status: 'error', message: 'Error: ' + message }, { status: 500 });
   }
 }

@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { Calendar, User, Star, LogOut, ArrowRight } from 'lucide-react';
-import Image from 'next/image';
-
 interface ClienteData {
   id: string;
   nombre: string;
@@ -48,6 +46,7 @@ export default function PortalCliente() {
     };
 
     loadCliente();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleLogout = async () => {

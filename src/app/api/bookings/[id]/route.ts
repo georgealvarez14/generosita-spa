@@ -1,28 +1,29 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { parsePrecioAjustado } from '@/lib/bookingUtils';
 
-// PATCH /api/bookings/[id] - update status or notes
+// PATCH /api/bookings/[id] - update status, notes or adjusted price
 export async function PATCH(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
-    const body = await req.json();
+    const body = await req.json() as {
+      estado_id?: number;
+      notas?: string;
+      precio_ajustado?: string | number | null;
+    };
     const { estado_id, notas, precio_ajustado } = body;
 
-    const precioParsed = precio_ajustado === '' || precio_ajustado === null || isNaN(Number(precio_ajustado)) 
-      ? null 
-      : Number(precio_ajustado);
-
-    const updated = await (prisma.cita as any).update({
+    const updated = await prisma.cita.update({
       where: { id },
       data: {
         ...(estado_id !== undefined && { estado_id }),
         ...(notas !== undefined && { notas }),
-        ...(precio_ajustado !== undefined && { precio_ajustado: precioParsed }),
+        ...(precio_ajustado !== undefined && { precio_ajustado: parsePrecioAjustado(precio_ajustado) }),
       },
-      include: { cliente: true, servicio: true },
+      include: { cliente: true, servicios: true },
     });
 
     return NextResponse.json(updated);
@@ -35,11 +36,11 @@ export async function PATCH(
 // DELETE /api/bookings/[id] - remove a booking
 export async function DELETE(
   _req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
-    await (prisma.cita as any).delete({ where: { id } });
+    await prisma.cita.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error(error);

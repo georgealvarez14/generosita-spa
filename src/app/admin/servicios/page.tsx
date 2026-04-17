@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Scissors, Pencil, Trash2, CheckCircle2, XCircle, Loader2, Plus, DollarSign, Clock } from 'lucide-react';
+import type { InputFieldProps } from '@/types';
 
 type Servicio = {
   id: string; nombre: string; precio: number; duracion: number;
@@ -9,7 +10,7 @@ type Servicio = {
 
 const EMPTY = { nombre: '', precio: '', duracion: '' };
 
-const InputField = ({ label, value, onChange, type = 'text', placeholder = '' }: any) => (
+const InputField = ({ label, value, onChange, type = 'text', placeholder = '' }: InputFieldProps) => (
   <div>
     <label className="text-xs text-zinc-500 font-medium mb-1 block">{label}</label>
     <input type={type} value={value} onChange={onChange} placeholder={placeholder}
@@ -93,9 +94,9 @@ export default function ServiciosAdmin() {
             <Plus className="w-4 h-4 text-brand" /> Agregar nuevo servicio
           </h3>
           <div className="grid sm:grid-cols-3 gap-4 mb-4">
-            <InputField label="Nombre del servicio" value={newData.nombre} onChange={(e: any) => setNewData(d => ({...d, nombre: e.target.value}))} placeholder="Ej. Manicura Rusa" />
-            <InputField label="Precio ($)" value={newData.precio} onChange={(e: any) => setNewData(d => ({...d, precio: e.target.value}))} type="number" placeholder="0" />
-            <InputField label="Duración (min)" value={newData.duracion} onChange={(e: any) => setNewData(d => ({...d, duracion: e.target.value}))} type="number" placeholder="60" />
+            <InputField label="Nombre del servicio" value={newData.nombre} onChange={(e) => setNewData(d => ({...d, nombre: e.target.value}))} placeholder="Ej. Manicura Rusa" />
+            <InputField label="Precio ($)" value={newData.precio} onChange={(e) => setNewData(d => ({...d, precio: e.target.value}))} type="number" placeholder="0" />
+            <InputField label="Duración (min)" value={newData.duracion} onChange={(e) => setNewData(d => ({...d, duracion: e.target.value}))} type="number" placeholder="60" />
           </div>
           <div className="flex gap-3 justify-end">
             <button onClick={() => { setShowNew(false); setError(''); }} className="px-4 py-2 text-sm text-zinc-500 hover:bg-zinc-100 rounded-lg transition">Cancelar</button>
@@ -125,9 +126,9 @@ export default function ServiciosAdmin() {
                 {isEditing ? (
                   <>
                     <div className="grid sm:grid-cols-3 gap-4 mb-4">
-                      <InputField label="Nombre" value={editData.nombre} onChange={(e: any) => setEditData(d => ({...d, nombre: e.target.value}))} />
-                      <InputField label="Precio ($)" value={editData.precio} onChange={(e: any) => setEditData(d => ({...d, precio: e.target.value}))} type="number" />
-                      <InputField label="Duración (min)" value={editData.duracion} onChange={(e: any) => setEditData(d => ({...d, duracion: e.target.value}))} type="number" />
+                      <InputField label="Nombre" value={editData.nombre} onChange={(e) => setEditData(d => ({...d, nombre: e.target.value}))} />
+                      <InputField label="Precio ($)" value={editData.precio} onChange={(e) => setEditData(d => ({...d, precio: e.target.value}))} type="number" />
+                      <InputField label="Duración (min)" value={editData.duracion} onChange={(e) => setEditData(d => ({...d, duracion: e.target.value}))} type="number" />
                     </div>
                     <div className="flex gap-2 justify-end">
                       <button onClick={() => setEditingId(null)} className="flex items-center gap-1 px-4 py-2 text-sm text-zinc-500 hover:bg-zinc-100 rounded-lg transition">

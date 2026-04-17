@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Calendar, Clock, MapPin, DollarSign, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import type { CitaConRelaciones } from '@/types';
 
 const formatTime12h = (timeStr: string | Date) => {
   try {
@@ -14,7 +15,7 @@ const formatTime12h = (timeStr: string | Date) => {
     const period = h >= 12 ? 'p. m.' : 'a. m.';
     const hour12 = h % 12 || 12;
     return `${hour12}:${m.toString().padStart(2, '0')} ${period}`;
-  } catch(e) {
+  } catch {
     return String(timeStr);
   }
 };
@@ -42,19 +43,11 @@ export default async function MisCitasPage() {
     redirect('/login');
   }
 
-  // Fetch only this client's appointments
-  // Warning: We must bypass TS checks for prisma.cita due to multiSchema typing issues in this older Prisma client
-  const citas = await (prisma as any).cita.findMany({
+  const citas = await prisma.cita.findMany({
     where: { cliente_id: cliente.id },
-    include: {
-      servicios: true,
-      estado_cita: true
-    },
-    orderBy: [
-      { fecha: 'desc' },
-      { hora: 'desc' }
-    ]
-  });
+    include: { servicios: true },
+    orderBy: [{ fecha: 'desc' }, { hora: 'desc' }],
+  }) as unknown as CitaConRelaciones[];
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 py-8 lg:py-12 px-4 sm:px-6">
@@ -89,7 +82,7 @@ export default async function MisCitasPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {citas.map((cita: any) => {
+          {citas.map((cita) => {
             const isPending = cita.estado_id === 1;
             const isConfirmed = cita.estado_id === 2;
             const isCancelled = cita.estado_id === 3;
@@ -107,20 +100,20 @@ export default async function MisCitasPage() {
                        {isConfirmed && <span className="bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">Confirmada</span>}
                        {isCancelled && <span className="bg-red-100 text-red-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">Cancelada</span>}
                     </div>
-                    <p className="font-bold text-zinc-800 text-lg sm:text-xl capitalize mb-1">{cita.servicios.map((s:any) => s.nombre).join(', ')}</p>
+                    <p className="font-bold text-zinc-800 text-lg sm:text-xl capitalize mb-1">{cita.servicios.map((s) => s.nombre).join(', ')}</p>
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-zinc-500">
                       <span className="flex items-center gap-1.5 bg-brand-light/20 text-brand px-2.5 py-1 rounded-md font-medium">
-                        <DollarSign className="w-3.5 h-3.5" /> 
+                        <DollarSign className="w-3.5 h-3.5" />
                         {cita.precio_ajustado !== null && cita.precio_ajustado > 0 ? (
                           <>
-                            ${(cita.servicios.reduce((acc: number, s: any) => acc + Number(s.precio), 0) - cita.precio_ajustado).toLocaleString()}
+                            ${(cita.servicios.reduce((acc, s) => acc + Number(s.precio), 0) - cita.precio_ajustado).toLocaleString()}
                             <span className="text-[10px] font-normal text-rose-500 ml-1">(-${cita.precio_ajustado.toLocaleString()})</span>
                           </>
                         ) : (
-                          `$${cita.servicios.reduce((acc: number, s: any) => acc + Number(s.precio), 0).toLocaleString()}`
+                          `$${cita.servicios.reduce((acc, s) => acc + Number(s.precio), 0).toLocaleString()}`
                         )}
                       </span>
-                      <span className="text-sm text-zinc-400 font-medium">• {cita.servicios?.reduce((acc:any,s:any)=>acc+Number(s.duracion),0)} min totales</span>
+                      <span className="text-sm text-zinc-400 font-medium">• {cita.servicios.reduce((acc, s) => acc + Number(s.duracion), 0)} min totales</span>
                     </div>
                   </div>
 

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import type { CitaConServicios } from '@/types';
 
 export async function GET() {
   try {
@@ -8,27 +9,18 @@ export async function GET() {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const [totalCitas, citasHoy, pendientes, totalClientes, totalServicios, servicios] = await Promise.all([
-      (prisma.cita as any).count(),
-      (prisma.cita as any).count({ where: { fecha: { gte: today, lt: tomorrow } } }),
-      (prisma.cita as any).count({ where: { estado_id: 1 } }),
-      prisma.cliente.count({
-        where: {
-          OR: [
-            { rol: 'cliente' },
-            { rol: null }
-          ]
-        }
-      }),
+    const [totalCitas, citasHoy, pendientes, totalClientes, totalServicios] = await Promise.all([
+      prisma.cita.count(),
+      prisma.cita.count({ where: { fecha: { gte: today, lt: tomorrow } } }),
+      prisma.cita.count({ where: { estado_id: 1 } }),
+      prisma.cliente.count({ where: { OR: [{ rol: 'cliente' }, { rol: null }] } }),
       prisma.servicio.count(),
-      prisma.servicio.findMany({ select: { precio: true } }),
     ]);
 
-    // Estimated revenue: sum of prices for non-cancelled bookings (estado_id !== 3)
-    const citasParaIngresos = await (prisma.cita as any).findMany({
+    const citasParaIngresos = await prisma.cita.findMany({
       where: { estado_id: { not: 3 } },
       include: { servicios: { select: { precio: true } } },
-    });
+    }) as unknown as CitaConServicios[];
 
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -38,26 +30,18 @@ export async function GET() {
 
     const ingresos = { hoy: 0, semana: 0, mes: 0 };
 
-    citasParaIngresos.forEach((c: any) => {
+    for (const c of citasParaIngresos) {
       const d = new Date(c.fecha);
-      d.setHours(0,0,0,0);
-      const basePrice = c.servicios?.reduce((acc: number, s: any) => acc + Number(s.precio), 0) ?? 0;
-      const dto = c.precio_ajustado || 0;
-      const precioFinal = basePrice - dto;
+      d.setHours(0, 0, 0, 0);
+      const basePrice = c.servicios.reduce((acc, s) => acc + Number(s.precio), 0);
+      const precioFinal = basePrice - (c.precio_ajustado ?? 0);
 
       if (d.getTime() === todayStart.getTime()) ingresos.hoy += precioFinal;
       if (d >= weekStart) ingresos.semana += precioFinal;
       if (d >= monthStart) ingresos.mes += precioFinal;
-    });
+    }
 
-    return NextResponse.json({
-      totalCitas,
-      citasHoy,
-      pendientes,
-      totalClientes,
-      totalServicios,
-      ingresos,
-    });
+    return NextResponse.json({ totalCitas, citasHoy, pendientes, totalClientes, totalServicios, ingresos });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Error al obtener estadísticas' }, { status: 500 });

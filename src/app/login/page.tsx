@@ -118,8 +118,8 @@ export default function LoginPage() {
           router.push('/portal');
         }
       }
-    } catch (err: any) {
-      setError('Error inesperado: ' + err.message);
+    } catch (err: unknown) {
+      setError('Error inesperado: ' + (err instanceof Error ? err.message : 'intenta de nuevo'));
     } finally {
       setLoading(false);
     }
