@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
-import { Calendar, User, Star, LogOut, ArrowRight } from 'lucide-react';
+import { Calendar, User, Star, LogOut, ArrowRight, MoveLeft, ShieldCheck } from 'lucide-react';
 interface ClienteData {
   id: string;
   nombre: string;
@@ -75,13 +75,22 @@ export default function PortalCliente() {
             <p className="text-purple-900/60 text-lg">Bienvenida de nuevo, <span className="font-semibold text-purple-900 tracking-wide capitalize">{cliente?.nombre?.split(' ')[0]}</span> 💜</p>
           </div>
           
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-5 py-2.5 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 font-semibold rounded-full transition-colors self-start sm:self-auto border border-red-100/50"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>Cerrar Sesión</span>
-          </button>
+          <div className="flex items-center gap-3 self-start sm:self-auto">
+            <Link
+              href="/"
+              className="group inline-flex items-center gap-2 px-5 py-2.5 text-purple-700/70 hover:text-purple-900 font-semibold rounded-full transition-colors min-h-[44px]"
+            >
+              <MoveLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+              <span>Volver al Inicio</span>
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-5 py-2.5 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 font-semibold rounded-full transition-colors border border-red-100/50 min-h-[44px]"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Cerrar Sesión</span>
+            </button>
+          </div>
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
@@ -120,6 +129,20 @@ export default function PortalCliente() {
             <h2 className="text-2xl font-bold font-outfit text-purple-950 mb-2 tracking-tight">Dejar Reseña</h2>
             <p className="text-purple-900/60 font-medium">Comparte tu experiencia con nosotros.</p>
           </Link>
+
+          {/* Panel de Administración — solo visible para admins */}
+          {cliente?.rol === 'admin' && (
+            <Link
+              href="/admin"
+              className="bg-white/80 backdrop-blur-xl rounded-3xl p-8 shadow-[0_8px_30px_rgb(20,0,50,0.03)] hover:bg-zinc-950 hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-all duration-300 border border-zinc-200 hover:border-zinc-800 group flex flex-col items-start hover:-translate-y-1"
+            >
+              <div className="bg-zinc-100 group-hover:bg-white/10 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-all duration-300">
+                <ShieldCheck className="w-8 h-8 text-zinc-700 group-hover:text-zinc-50 transition-colors duration-300" />
+              </div>
+              <h2 className="text-2xl font-bold font-outfit text-slate-900 group-hover:text-zinc-50 mb-2 tracking-tight transition-colors duration-300">Panel de Administración</h2>
+              <p className="text-purple-900/60 group-hover:text-zinc-50/60 font-medium transition-colors duration-300">Gestionar servicios, citas y estadísticas.</p>
+            </Link>
+          )}
         </div>
 
         {/* Acción Principal */}

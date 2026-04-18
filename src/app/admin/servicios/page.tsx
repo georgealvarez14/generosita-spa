@@ -1,14 +1,37 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Scissors, Pencil, Trash2, CheckCircle2, XCircle, Loader2, Plus, DollarSign, Clock } from 'lucide-react';
-import type { InputFieldProps } from '@/types';
+import { Scissors, Pencil, Trash2, CheckCircle2, XCircle, Loader2, Plus, DollarSign, Clock, MapPin } from 'lucide-react';
+import type { InputFieldProps, ModalidadServicio } from '@/types';
 
 type Servicio = {
-  id: string; nombre: string; precio: number; duracion: number;
+  id: string;
+  nombre: string;
+  precio: number;
+  duracion: number;
+  modalidad: ModalidadServicio;
 };
 
-const EMPTY = { nombre: '', precio: '', duracion: '' };
+type FormState = {
+  nombre: string;
+  precio: string;
+  duracion: string;
+  modalidad: ModalidadServicio;
+};
+
+const EMPTY: FormState = { nombre: '', precio: '', duracion: '', modalidad: 'LOCAL' };
+
+const MODALIDAD_LABEL: Record<ModalidadServicio, string> = {
+  LOCAL: 'Solo en el Spa',
+  DOMICILIO: 'Solo a Domicilio',
+  AMBOS: 'Ambas',
+};
+
+const MODALIDAD_BADGE: Record<ModalidadServicio, string> = {
+  LOCAL: 'Local',
+  DOMICILIO: 'Domicilio',
+  AMBOS: 'Ambas',
+};
 
 const InputField = ({ label, value, onChange, type = 'text', placeholder = '' }: InputFieldProps) => (
   <div>
@@ -18,12 +41,35 @@ const InputField = ({ label, value, onChange, type = 'text', placeholder = '' }:
   </div>
 );
 
+const SelectField = ({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: ModalidadServicio;
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+}) => (
+  <div>
+    <label className="text-xs text-zinc-500 font-medium mb-1 block">{label}</label>
+    <select
+      value={value}
+      onChange={onChange}
+      className="w-full border border-zinc-200 rounded-lg px-3 py-2 text-sm text-zinc-800 bg-white focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
+    >
+      <option value="LOCAL">{MODALIDAD_LABEL.LOCAL}</option>
+      <option value="DOMICILIO">{MODALIDAD_LABEL.DOMICILIO}</option>
+      <option value="AMBOS">{MODALIDAD_LABEL.AMBOS}</option>
+    </select>
+  </div>
+);
+
 export default function ServiciosAdmin() {
   const [servicios, setServicios] = useState<Servicio[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editData, setEditData] = useState<typeof EMPTY>(EMPTY);
-  const [newData, setNewData] = useState<typeof EMPTY>(EMPTY);
+  const [editData, setEditData] = useState<FormState>(EMPTY);
+  const [newData, setNewData] = useState<FormState>(EMPTY);
   const [showNew, setShowNew] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -37,7 +83,12 @@ export default function ServiciosAdmin() {
 
   const startEdit = (s: Servicio) => {
     setEditingId(s.id);
-    setEditData({ nombre: s.nombre, precio: String(s.precio), duracion: String(s.duracion) });
+    setEditData({
+      nombre: s.nombre,
+      precio: String(s.precio),
+      duracion: String(s.duracion),
+      modalidad: s.modalidad,
+    });
     setShowNew(false);
   };
 
@@ -45,7 +96,12 @@ export default function ServiciosAdmin() {
     setSaving(true); setError('');
     const res = await fetch(`/api/services/${id}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nombre: editData.nombre, precio: Number(editData.precio), duracion: Number(editData.duracion) }),
+      body: JSON.stringify({
+        nombre: editData.nombre,
+        precio: Number(editData.precio),
+        duracion: Number(editData.duracion),
+        modalidad: editData.modalidad,
+      }),
     });
     if (!res.ok) { setError('Error al guardar'); }
     setSaving(false); setEditingId(null); load();
@@ -56,7 +112,12 @@ export default function ServiciosAdmin() {
     setSaving(true); setError('');
     const res = await fetch('/api/services', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nombre: newData.nombre, precio: Number(newData.precio), duracion: Number(newData.duracion) }),
+      body: JSON.stringify({
+        nombre: newData.nombre,
+        precio: Number(newData.precio),
+        duracion: Number(newData.duracion),
+        modalidad: newData.modalidad,
+      }),
     });
     if (!res.ok) { setError('Error al crear servicio'); }
     setSaving(false); setNewData(EMPTY); setShowNew(false); load();
@@ -93,10 +154,11 @@ export default function ServiciosAdmin() {
           <h3 className="font-bold text-zinc-800 mb-4 flex items-center gap-2">
             <Plus className="w-4 h-4 text-brand" /> Agregar nuevo servicio
           </h3>
-          <div className="grid sm:grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             <InputField label="Nombre del servicio" value={newData.nombre} onChange={(e) => setNewData(d => ({...d, nombre: e.target.value}))} placeholder="Ej. Manicura Rusa" />
             <InputField label="Precio ($)" value={newData.precio} onChange={(e) => setNewData(d => ({...d, precio: e.target.value}))} type="number" placeholder="0" />
             <InputField label="Duración (min)" value={newData.duracion} onChange={(e) => setNewData(d => ({...d, duracion: e.target.value}))} type="number" placeholder="60" />
+            <SelectField label="Modalidad" value={newData.modalidad} onChange={(e) => setNewData(d => ({...d, modalidad: e.target.value as ModalidadServicio}))} />
           </div>
           <div className="flex gap-3 justify-end">
             <button onClick={() => { setShowNew(false); setError(''); }} className="px-4 py-2 text-sm text-zinc-500 hover:bg-zinc-100 rounded-lg transition">Cancelar</button>
@@ -125,10 +187,11 @@ export default function ServiciosAdmin() {
               <div key={s.id} className={`bg-white rounded-2xl border p-5 transition-all ${isEditing ? 'border-brand/30 shadow-md' : 'border-zinc-200 hover:border-zinc-300'}`}>
                 {isEditing ? (
                   <>
-                    <div className="grid sm:grid-cols-3 gap-4 mb-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                       <InputField label="Nombre" value={editData.nombre} onChange={(e) => setEditData(d => ({...d, nombre: e.target.value}))} />
                       <InputField label="Precio ($)" value={editData.precio} onChange={(e) => setEditData(d => ({...d, precio: e.target.value}))} type="number" />
                       <InputField label="Duración (min)" value={editData.duracion} onChange={(e) => setEditData(d => ({...d, duracion: e.target.value}))} type="number" />
+                      <SelectField label="Modalidad" value={editData.modalidad} onChange={(e) => setEditData(d => ({...d, modalidad: e.target.value as ModalidadServicio}))} />
                     </div>
                     <div className="flex gap-2 justify-end">
                       <button onClick={() => setEditingId(null)} className="flex items-center gap-1 px-4 py-2 text-sm text-zinc-500 hover:bg-zinc-100 rounded-lg transition">
@@ -146,7 +209,19 @@ export default function ServiciosAdmin() {
                       <Scissors className="w-5 h-5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-zinc-800">{s.nombre}</p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-bold text-zinc-800">{s.nombre}</p>
+                        <span
+                          className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full inline-flex items-center gap-1 ${
+                            s.modalidad === 'LOCAL'
+                              ? 'bg-zinc-100 text-zinc-600'
+                              : 'bg-mint-premium/30 text-brand-dark'
+                          }`}
+                        >
+                          {s.modalidad !== 'LOCAL' && <MapPin className="w-3 h-3" />}
+                          {MODALIDAD_BADGE[s.modalidad]}
+                        </span>
+                      </div>
                       <div className="flex items-center gap-4 mt-0.5">
                         <span className="text-sm text-brand font-bold flex items-center gap-0.5">
                           <DollarSign className="w-3.5 h-3.5" />{s.precio.toLocaleString()}

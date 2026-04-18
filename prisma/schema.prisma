@@ -24,12 +24,23 @@ model cliente {
 }
 
 model servicio {
-  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  nombre     String
-  precio     Int
-  duracion   Int
-  created_at DateTime? @default(now()) @db.Timestamptz
-  citas      cita[]
+  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre            String
+  precio            Int
+  duracion          Int
+  modalidad         ModalidadServicio @default(LOCAL)
+  recargo_domicilio Int?
+  created_at        DateTime?         @default(now()) @db.Timestamptz
+  citas             cita[]
+
+  @@index([modalidad], map: "idx_servicio_modalidad")
+  @@schema("public")
+}
+
+enum ModalidadServicio {
+  LOCAL
+  DOMICILIO
+  AMBOS
 
   @@schema("public")
 }
@@ -65,15 +76,18 @@ model estado_cita {
 }
 
 model cita {
-  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  fecha       DateTime  @db.Date
-  hora        DateTime  @db.Time
-  cliente_id  String    @db.Uuid
-  empleado_id String?   @db.Uuid
-  estado_id   Int?      @default(1)
-  notas       String?
-  precio_ajustado Int?
-  created_at  DateTime? @default(now()) @db.Timestamptz
+  id                   String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  fecha                DateTime          @db.Date
+  hora                 DateTime          @db.Time
+  cliente_id           String            @db.Uuid
+  empleado_id          String?           @db.Uuid
+  estado_id            Int?              @default(1)
+  notas                String?
+  precio_ajustado      Int?
+  modalidad            ModalidadServicio @default(LOCAL)
+  direccion_domicilio  String?
+  indicaciones         String?
+  created_at           DateTime?         @default(now()) @db.Timestamptz
 
   cliente  cliente      @relation(fields: [cliente_id], references: [id], onDelete: Cascade, map: "fk_cliente")
   servicios servicio[]

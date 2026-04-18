@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import BookingForm from '@/components/BookingForm';
 import { Sparkles } from 'lucide-react';
 
@@ -19,7 +20,13 @@ export default function ReservarPage() {
         </div>
 
         <div className="bg-white rounded-3xl shadow-2xl shadow-purple-100 p-6 md:p-10 border border-purple-100">
-          <BookingForm />
+          <Suspense fallback={
+            <div className="text-center py-12 text-zinc-400 animate-pulse">
+              Cargando formulario...
+            </div>
+          }>
+            <BookingForm />
+          </Suspense>
         </div>
       </div>
     </div>

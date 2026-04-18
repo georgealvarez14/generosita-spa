@@ -1,20 +1,13 @@
-import dynamic from 'next/dynamic'
 import { TrendingUp, CalendarCheck, CalendarX, Users, DollarSign } from 'lucide-react'
 import { prisma } from '@/lib/prisma'
 import { getUTCDateKey } from '@/lib/bookingUtils'
 import type { CitaConServicios } from '@/types'
 import type { IngresosDataPoint } from '@/components/admin/charts/IngresosAreaChart'
 import type { ServicioDataPoint } from '@/components/admin/charts/ServiciosDonutChart'
-
-const IngresosAreaChart = dynamic(
-  () => import('@/components/admin/charts/IngresosAreaChart'),
-  { ssr: false, loading: () => <div className="h-[280px] animate-pulse bg-purple-50 rounded-2xl" /> },
-)
-
-const ServiciosDonutChart = dynamic(
-  () => import('@/components/admin/charts/ServiciosDonutChart'),
-  { ssr: false, loading: () => <div className="h-[280px] animate-pulse bg-purple-50 rounded-2xl" /> },
-)
+import {
+  IngresosAreaChart,
+  ServiciosDonutChart,
+} from '@/components/admin/charts/ChartWrappers'
 
 // estado_id 3 = Cancelada (excluded from revenue)
 const CANCELADA_ID = 3

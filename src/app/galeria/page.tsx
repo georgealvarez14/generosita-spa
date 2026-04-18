@@ -10,7 +10,7 @@ export default async function GaleriaPage() {
   });
 
   return (
-    <div className="flex flex-col min-h-screen pb-20">
+    <div className="flex flex-col min-h-screen bg-white">
       {/* Header section */}
       <section className="bg-brand-light/20 py-16">
         <div className="container px-4 mx-auto text-center">

@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, Clock, CheckCircle2, ChevronRight, User, Phone, MapPin, ArrowRight } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Calendar as CalendarIcon, Clock, CheckCircle2, ChevronRight, User, Phone, MapPin, ArrowRight, Home } from 'lucide-react';
 import { format, addDays, isSameDay, startOfDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { createClient } from '@/utils/supabase/client';
 
-type Servicio = { id: string; nombre: string; precio: number; duracion: number };
+type Servicio = { id: string; nombre: string; precio: number; duracion: number; modalidad?: string };
 type Step = 1 | 2 | 3 | 4;
 
 const TIME_SLOTS = [
@@ -36,6 +37,10 @@ const getAvailableDates = () => {
 };
 
 export default function BookingForm() {
+  const searchParams = useSearchParams();
+  const urlServicioId = searchParams.get('servicioId');
+  const urlModalidad = searchParams.get('modalidad');
+
   const [step, setStep] = useState<Step>(1);
   const [services, setServices] = useState<Servicio[]>([]);
   const [loadingServices, setLoadingServices] = useState(true);
@@ -44,7 +49,7 @@ export default function BookingForm() {
   const [selectedServices, setSelectedServices] = useState<Servicio[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ nombre: '', telefono: '', notas: '' });
+  const [formData, setFormData] = useState({ nombre: '', telefono: '', notas: '', direccion: '' });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorLine, setErrorLine] = useState('');
@@ -56,13 +61,33 @@ export default function BookingForm() {
   const supabase = createClient();
   const dates = getAvailableDates();
 
+  // Determine if address fields should show based on selected services' modalidad
+  const needsDomicilio = selectedServices.some(
+    s => s.modalidad === 'DOMICILIO' || s.modalidad === 'AMBOS'
+  ) || urlModalidad === 'domicilio';
+
+  // Pre-select service from URL after services load
+  const applyUrlPreselection = useCallback((loadedServices: Servicio[]) => {
+    if (urlServicioId) {
+      const match = loadedServices.find(s => s.id === urlServicioId);
+      if (match) {
+        setSelectedServices(prev => {
+          // Only pre-select if nothing is selected yet
+          if (prev.length === 0) return [match];
+          return prev;
+        });
+      }
+    }
+  }, [urlServicioId]);
+
   useEffect(() => {
     async function fetchServices() {
       try {
         const res = await fetch('/api/services');
         if (res.ok) {
-          const data = await res.json();
+          const data: Servicio[] = await res.json();
           setServices(data);
+          applyUrlPreselection(data);
         }
       } catch (err) {
         console.error(err);
@@ -84,7 +109,8 @@ export default function BookingForm() {
     
     fetchServices();
     fetchUser();
-  }, [supabase]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (step === 2 && selectedServices.length > 0) {
@@ -123,6 +149,10 @@ export default function BookingForm() {
       setErrorLine('Nombre y teléfono son obligatorios');
       return;
     }
+    if (needsDomicilio && !formData.direccion.trim()) {
+      setErrorLine('La dirección es obligatoria para servicios a domicilio');
+      return;
+    }
     
     setIsSubmitting(true);
     setErrorLine('');
@@ -137,7 +167,11 @@ export default function BookingForm() {
           fecha: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined,
           hora: selectedTime,
           serviciosIds: selectedServices.map(s => s.id),
-          notas: formData.notas
+          notas: formData.notas,
+          ...(needsDomicilio && formData.direccion.trim() && {
+            direccion_domicilio: formData.direccion.trim(),
+            modalidad: 'DOMICILIO',
+          }),
         })
       });
       
@@ -161,9 +195,10 @@ export default function BookingForm() {
     const phone = '573172137402'; // Replace with real business phone
     const serviciosTexto = selectedServices.map(s => s.nombre).join(', ');
     const notasText = formData.notas ? `\n\u{1F4DD} *Notas para la especialista:* ${formData.notas}` : '';
+    const direccionText = needsDomicilio && formData.direccion ? `\n\u{1F3E0} *Dirección:* ${formData.direccion}` : '';
     
     // Using Unicode Escapes for emojis and Spanish accents to bypass Windows File Encoding corruptions
-    const rawText = `\u{1F49C} \u00A1Hola equipo de Generosita Spa! \u{2728}\nAcabo de agendar una nueva cita desde la p\u00E1gina web y me gustar\u00EDa confirmarla.\n\n\u{1F485} *Servicios:* ${serviciosTexto}\n\u{1F4C5} *Fecha:* ${selectedDate ? format(selectedDate, "dd 'de' MMMM", { locale: es }) : ''}\n\u{23F0} *Hora:* ${selectedTime ? formatTime12h(selectedTime) : ''}\n\u{1F464} *A nombre de:* ${formData.nombre}${notasText}\n\n\u00A1Quedo atenta a su confirmaci\u00F3n, much\u00EDsimas gracias! \u{1F970}`;
+    const rawText = `\u{1F49C} \u00A1Hola equipo de Generosita Spa! \u{2728}\nAcabo de agendar una nueva cita desde la p\u00E1gina web y me gustar\u00EDa confirmarla.\n\n\u{1F485} *Servicios:* ${serviciosTexto}\n\u{1F4C5} *Fecha:* ${selectedDate ? format(selectedDate, "dd 'de' MMMM", { locale: es }) : ''}\n\u{23F0} *Hora:* ${selectedTime ? formatTime12h(selectedTime) : ''}\n\u{1F464} *A nombre de:* ${formData.nombre}${direccionText}${notasText}\n\n\u00A1Quedo atenta a su confirmaci\u00F3n, much\u00EDsimas gracias! \u{1F970}`;
 
     const encodedText = encodeURIComponent(rawText);
     window.open(`https://wa.me/${phone}?text=${encodedText}`, '_blank');
@@ -188,7 +223,12 @@ export default function BookingForm() {
       {/* Step 1: Select Service */}
       {step === 1 && (
         <div className="animate-fade-in">
-          <h2 className="text-2xl font-bold font-outfit text-brand-dark mb-6">Elige el servicio</h2>
+          <h2 className="text-2xl font-bold font-outfit text-brand-dark mb-2">Elige el servicio</h2>
+          {urlServicioId && selectedServices.length > 0 && (
+            <p className="text-sm text-brand/80 mb-4">
+              Ya seleccionamos tu servicio. Puedes cambiarlo o agregar más.
+            </p>
+          )}
           {loadingServices ? (
             <div className="grid gap-4 sm:grid-cols-2 animate-pulse">
                {[...Array(4)].map((_, i) => <div key={i} className="h-24 bg-zinc-100 rounded-xl" />)}
@@ -215,8 +255,16 @@ export default function BookingForm() {
                     <h3 className="font-bold text-zinc-800">{s.nombre}</h3>
                     <span className="text-brand font-bold">${Number(s.precio).toLocaleString()}</span>
                   </div>
-                  <div className="flex items-center text-xs text-zinc-500 mt-2">
-                    <Clock className="w-3.5 h-3.5 mr-1" /> {s.duracion} min
+                  <div className="flex items-center justify-between text-xs text-zinc-500 mt-2">
+                    <span className="flex items-center">
+                      <Clock className="w-3.5 h-3.5 mr-1" /> {s.duracion} min
+                    </span>
+                    {s.modalidad && s.modalidad !== 'LOCAL' && (
+                      <span className="inline-flex items-center gap-1 bg-mint-premium/20 text-brand-dark text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">
+                        <Home className="w-3 h-3" />
+                        {s.modalidad === 'DOMICILIO' ? 'Domicilio' : 'Local / Domicilio'}
+                      </span>
+                    )}
                   </div>
                 </div>
               )})}
@@ -353,6 +401,12 @@ export default function BookingForm() {
                    <Clock className="w-3.5 h-3.5 shadow-sm" />
                    Duración aproximada: {selectedServices.reduce((acc, s) => acc + Number(s.duracion), 0)} minutos
                  </p>
+                 {needsDomicilio && (
+                   <p className="text-brand text-sm font-semibold flex items-center gap-1 mt-1">
+                     <Home className="w-3.5 h-3.5" />
+                     Servicio a domicilio
+                   </p>
+                 )}
                </div>
                <div className="text-right flex-shrink-0">
                  <p className="text-xs text-zinc-500 uppercase font-bold tracking-wider">A pagar en el local</p>
@@ -420,6 +474,33 @@ export default function BookingForm() {
                   </div>
                 </>
               )}
+
+              {/* Address field — appears when any selected service supports domicilio */}
+              {needsDomicilio && (
+                <div className="bg-mint-premium/5 border border-mint-premium/30 rounded-2xl p-5 space-y-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Home className="w-4 h-4 text-brand-dark" />
+                    <span className="text-sm font-bold text-brand-dark">Dirección para el domicilio *</span>
+                  </div>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <MapPin className="h-5 w-5 text-zinc-400" />
+                    </div>
+                    <input
+                      required
+                      type="text"
+                      value={formData.direccion}
+                      onChange={(e) => setFormData({...formData, direccion: e.target.value})}
+                      className="block w-full pl-10 pr-3 py-3 border border-zinc-200 rounded-xl focus:ring-brand focus:border-brand bg-white transition-colors outline-none text-brand-dark font-medium"
+                      placeholder="Ej. Cra 45 #67-89, Barrio El Poblado"
+                    />
+                  </div>
+                  <p className="text-xs text-zinc-500">
+                    Incluye barrio, edificio o puntos de referencia para ubicarte fácilmente.
+                  </p>
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm font-medium text-zinc-700 mb-1">Notas para la especialista (opcional)</label>
                 <textarea
@@ -458,7 +539,10 @@ export default function BookingForm() {
                <div className="bg-brand/10 p-2 rounded-lg text-brand"><MapPin className="w-5 h-5"/></div>
                <div>
                  <p className="text-sm text-zinc-500 font-medium">Dónde</p>
-                 <p className="font-bold text-zinc-800">Generosita Spa</p>
+                 <p className="font-bold text-zinc-800">
+                   {needsDomicilio && formData.direccion ? formData.direccion : 'Generosita Spa'}
+                 </p>
+                 {needsDomicilio && <p className="text-xs text-brand font-semibold mt-1">Servicio a domicilio</p>}
                </div>
              </div>
           </div>

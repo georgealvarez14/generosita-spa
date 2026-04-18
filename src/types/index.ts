@@ -1,4 +1,7 @@
 import type React from 'react'
+import type { ModalidadServicio } from '@prisma/client'
+
+export type { ModalidadServicio }
 
 // ─── Database model types ─────────────────────────────────────────────────────
 
@@ -7,6 +10,8 @@ export interface ServicioRecord {
   nombre: string
   precio: number
   duracion: number
+  modalidad: ModalidadServicio
+  recargo_domicilio: number | null
   created_at?: Date | null
 }
 
@@ -34,6 +39,9 @@ export interface CitaRecord {
   estado_id: number | null
   notas: string | null
   precio_ajustado: number | null
+  modalidad: ModalidadServicio
+  direccion_domicilio: string | null
+  indicaciones: string | null
   created_at?: Date | null
 }
 
@@ -54,6 +62,8 @@ export interface ServicioDTO {
   nombre: string
   precio: number
   duracion: number
+  modalidad: ModalidadServicio
+  recargo_domicilio: number | null
 }
 
 export interface ClienteDTO {
@@ -71,6 +81,9 @@ export interface CitaDTO {
   estado_id: number | null
   notas: string | null
   precio_ajustado: number | null
+  modalidad: ModalidadServicio
+  direccion_domicilio: string | null
+  indicaciones: string | null
   cliente: ClienteDTO
   servicios: ServicioDTO[]
 }

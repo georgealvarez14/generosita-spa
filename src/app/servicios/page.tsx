@@ -16,7 +16,7 @@ export default async function ServiciosPage() {
   const servicios = await getServicios();
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-white">
       {/* Header section */}
       <section className="bg-gradient-to-br from-purple-50 to-pink-50 py-16">
         <FadeIn className="container px-4 mx-auto text-center">
@@ -59,7 +59,7 @@ export default async function ServiciosPage() {
 
                 <div className="mt-auto pt-4 border-t border-purple-50">
                   <Link
-                    href={`/reservar?servicio=${encodeURIComponent(servicio.id)}`}
+                    href={`/reservar?servicioId=${encodeURIComponent(servicio.id)}`}
                     className="w-full inline-flex items-center justify-center py-3 rounded-xl bg-purple-50 text-purple-700 font-semibold hover:bg-purple-600 hover:text-white transition-all"
                   >
                     Reservar <ArrowRight className="ml-2 w-4 h-4" />

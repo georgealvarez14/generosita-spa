@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import MobileNav from './MobileNav';
 
 export default function LayoutWrapper({
   header,
@@ -18,10 +19,12 @@ export default function LayoutWrapper({
   return (
     <>
       {!isHidden && header}
-      <main className="flex-1 flex flex-col relative">
+      <main className={`flex-1 flex flex-col relative overflow-x-hidden min-h-screen pb-20 md:pb-0`}>
         {children}
       </main>
       {!isHidden && footer}
+      {/* Mobile bottom nav — always rendered, self-hides on /admin */}
+      <MobileNav />
     </>
   );
 }

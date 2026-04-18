@@ -20,13 +20,21 @@
   --color-brand-dark: var(--brand-purple-dark);
   --color-brand-light: var(--brand-purple-light);
   --color-brand-bg: var(--brand-purple-bg);
+
+  /* Luxury palette */
+  --color-lavender-soft: #E6E6FA;
+  --color-pearl-gray: #F5F5F5;
+  --color-mint-premium: #98FFD9;
+}
+
+html {
+  overflow-x: hidden;
 }
 
 body {
-  background-color: var(--background);
-  color: var(--foreground);
   font-family: var(--font-sans), sans-serif;
-  @apply antialiased selection:bg-brand-light selection:text-brand-dark;
+  overflow-x: hidden;
+  @apply bg-[#1c1132] text-slate-800 antialiased selection:bg-brand-light selection:text-brand-dark;
 }
 
 /* Animations & utils */

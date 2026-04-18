@@ -1,5 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import type { ModalidadServicio } from '@prisma/client';
+
+const MODALIDADES: readonly ModalidadServicio[] = ['LOCAL', 'DOMICILIO', 'AMBOS'];
+
+function parseModalidad(value: unknown): ModalidadServicio | undefined {
+  return typeof value === 'string' && (MODALIDADES as readonly string[]).includes(value)
+    ? (value as ModalidadServicio)
+    : undefined;
+}
 
 // PATCH /api/services/[id] - update a service
 export async function PATCH(
@@ -9,7 +18,12 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await req.json();
-    const { nombre, precio, duracion } = body;
+    const { nombre, precio, duracion, modalidad } = body;
+
+    const modalidadValue = parseModalidad(modalidad);
+    if (modalidad !== undefined && modalidadValue === undefined) {
+      return NextResponse.json({ error: 'Modalidad inválida' }, { status: 400 });
+    }
 
     const updated = await prisma.servicio.update({
       where: { id },
@@ -17,6 +31,7 @@ export async function PATCH(
         ...(nombre !== undefined && { nombre }),
         ...(precio !== undefined && { precio: Number(precio) }),
         ...(duracion !== undefined && { duracion: Number(duracion) }),
+        ...(modalidadValue !== undefined && { modalidad: modalidadValue }),
       },
     });
     return NextResponse.json(updated);
