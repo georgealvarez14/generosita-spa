@@ -49,3 +49,21 @@ body {
     @apply bg-black/40 backdrop-blur-md border border-white/10 shadow-xl;
   }
 }
+
+/* Performance: defer rendering of off-screen sections */
+.content-defer {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 600px;
+}
+
+/* GPU-promote decorative blur elements */
+.gpu-blur {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* Lightweight CSS dot pattern (replaces SVG network request) */
+.pattern-dots {
+  background-image: radial-gradient(circle, rgba(255,255,255,0.12) 1px, transparent 1px);
+  background-size: 30px 30px;
+}

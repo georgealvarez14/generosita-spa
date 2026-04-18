@@ -30,7 +30,7 @@ export default async function Home() {
       <Hero services={heroServices} />
 
       {/* Featured Services */}
-      <section className="w-full py-20 bg-white">
+      <section className="w-full py-20 bg-white content-defer">
         <div className="container px-4 md:px-6 mx-auto">
           <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
             <div className="inline-flex items-center gap-2 rounded-full bg-purple-100 px-4 py-1.5 text-sm font-medium text-purple-700">
@@ -96,11 +96,11 @@ export default async function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="w-full pt-20 pb-28 md:pb-24 bg-gradient-to-br from-purple-600 to-pink-500 text-white relative overflow-hidden -mb-px">
-        <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-10" />
+      <section className="w-full pt-20 pb-28 md:pb-24 bg-gradient-to-br from-purple-600 to-pink-500 text-white relative overflow-hidden -mb-px content-defer">
+        <div className="absolute inset-0 pattern-dots" />
         <div className="absolute top-0 left-0 w-full h-full">
-          <div className="absolute top-10 left-10 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-10 right-10 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
+          <div className="absolute top-10 left-10 w-64 h-64 bg-white/10 rounded-full blur-3xl gpu-blur" />
+          <div className="absolute bottom-10 right-10 w-64 h-64 bg-white/10 rounded-full blur-3xl gpu-blur" />
         </div>
 
         <FadeIn className="container px-4 md:px-6 mx-auto text-center relative z-10">

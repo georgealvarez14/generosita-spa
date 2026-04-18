@@ -4,7 +4,7 @@ import { MapPin, Instagram, Facebook } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="bg-gradient-to-br from-[#1c1132] to-[#2c1b4d] text-purple-50 pt-16 pb-8">
+    <footer className="bg-gradient-to-br from-[#1c1132] to-[#2c1b4d] text-purple-50 pt-16 pb-8 content-defer">
       
       {/* Banner de Llamado a la Acción Integrado */}
       <div className="container mx-auto px-4 lg:px-8 mb-16 border-b border-white/10 pb-12">

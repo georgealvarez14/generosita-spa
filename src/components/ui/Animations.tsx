@@ -7,8 +7,9 @@ export function FadeIn({ children, delay = 0, className }: { children: React.Rea
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.5, delay, ease: "easeOut" }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.4, delay, ease: "easeOut" }}
+      style={{ willChange: 'opacity, transform' }}
       className={className}
     >
       {children}
@@ -23,13 +24,13 @@ export function StaggerContainer({ children, className }: { children: React.Reac
         hidden: {},
         show: {
           transition: {
-            staggerChildren: 0.15
+            staggerChildren: 0.1
           }
         }
       }}
       initial="hidden"
       whileInView="show"
-      viewport={{ once: true, margin: "-50px" }}
+      viewport={{ once: true, margin: "-100px" }}
       className={className}
     >
       {children}
@@ -41,9 +42,10 @@ export function StaggerItem({ children, className }: { children?: React.ReactNod
   return (
     <motion.div
       variants={{
-        hidden: { opacity: 0, y: 20 },
-        show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+        hidden: { opacity: 0, y: 16 },
+        show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" } }
       }}
+      style={{ willChange: 'opacity, transform' }}
       className={className}
     >
       {children}

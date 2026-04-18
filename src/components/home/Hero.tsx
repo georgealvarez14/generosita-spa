@@ -32,11 +32,11 @@ export default function Hero({ services = [] }: Props) {
       {/* Decorative glows — frame the centered composition */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-mint-premium/40 blur-3xl opacity-70"
+        className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-mint-premium/40 blur-3xl opacity-70 gpu-blur"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -bottom-24 -left-24 h-80 w-80 rounded-full bg-lavender-soft/70 blur-3xl opacity-60"
+        className="pointer-events-none absolute -bottom-24 -left-24 h-80 w-80 rounded-full bg-lavender-soft/70 blur-3xl opacity-60 gpu-blur"
       />
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 pt-12 pb-16 md:px-8 md:pt-16 md:pb-20 lg:pt-20 lg:pb-24">
