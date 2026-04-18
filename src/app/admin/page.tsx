@@ -10,6 +10,30 @@ import Link from 'next/link';
 import { FadeInOnLoad, StaggerContainerOnLoad, StaggerItem } from "@/components/ui/Animations";
 import { motion, AnimatePresence } from 'framer-motion'; // Asegúrate de tener framer-motion instalado
 
+// Agrega esto justo debajo de los imports
+type Stats = {
+  totalCitas: number;
+  citasHoy: number;
+  pendientes: number;
+  totalClientes: number;
+  totalServicios: number;
+  ingresos: {
+    hoy: number;
+    semana: number;
+    mes: number;
+  };
+};
+
+type Cita = {
+  id: string; 
+  fecha: string; 
+  hora: string; 
+  estado_id: number; 
+  notas: string | null;
+  cliente: { nombre: string; telefono: string };
+  servicios: { nombre: string; precio: number; duracion: number }[];
+};
+
 const AdminCalendar = dynamic(() => import('@/components/admin/AdminCalendar'), {
   ssr: false,
   loading: () => <div className="h-96 animate-pulse bg-purple-50 rounded-2xl" />,
