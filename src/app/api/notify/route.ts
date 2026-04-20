@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { formatHoraFromDate } from '@/lib/bookingUtils';
 import type { CitaConRelaciones } from '@/types';
 
 /**
@@ -31,8 +32,14 @@ export async function GET(req: Request) {
     }) as unknown as CitaConRelaciones[];
 
     const recordatorios = citasProximas.map((cita) => {
-      const fecha = cita.fecha.toLocaleDateString('es-CO', { day: '2-digit', month: 'long' });
-      const hora = new Date(cita.hora).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+      // timeZone: 'UTC' ensures we format the DATE column's stored day,
+      // not the server-local day (which can drift by one in non-UTC zones).
+      const fecha = cita.fecha.toLocaleDateString('es-CO', {
+        day: '2-digit',
+        month: 'long',
+        timeZone: 'UTC',
+      });
+      const hora = formatHoraFromDate(cita.hora);
       const nombresServicios = cita.servicios.map((s) => s.nombre).join(', ');
       const mensaje = encodeURIComponent(
         `Hola ${cita.cliente.nombre} 💜 Te recordamos tu cita en Generosita SPA mañana ${fecha} a las ${hora} para tus servicios: ${nombresServicios}. ¡Te esperamos!`,

@@ -1,17 +1,26 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import type { CitaConServicios } from '@/types';
+import { getUTCDateKey } from '@/lib/bookingUtils';
+import type { CitaConServicios, StatsResponse } from '@/types';
+
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 export async function GET() {
   try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    // All boundaries computed in UTC to match how Prisma stores DATE columns
+    // (midnight UTC). Mixing local-time math here caused off-by-one errors
+    // on non-UTC servers — see CLAUDE.md "Date/Time Handling".
+    const now = new Date();
+    const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const tomorrowStart = new Date(todayStart.getTime() + DAY_MS);
+    const dayOfWeek = todayStart.getUTCDay() || 7; // Sun=0 → 7 so Monday is week start
+    const weekStart = new Date(todayStart.getTime() - (dayOfWeek - 1) * DAY_MS);
+    const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+    const todayKey = getUTCDateKey(todayStart);
 
     const [totalCitas, citasHoy, pendientes, totalClientes, totalServicios] = await Promise.all([
       prisma.cita.count(),
-      prisma.cita.count({ where: { fecha: { gte: today, lt: tomorrow } } }),
+      prisma.cita.count({ where: { fecha: { gte: todayStart, lt: tomorrowStart } } }),
       prisma.cita.count({ where: { estado_id: 1 } }),
       prisma.cliente.count({ where: { OR: [{ rol: 'cliente' }, { rol: null }] } }),
       prisma.servicio.count(),
@@ -22,26 +31,26 @@ export async function GET() {
       include: { servicios: { select: { precio: true } } },
     }) as unknown as CitaConServicios[];
 
-    const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const weekStart = new Date(todayStart);
-    weekStart.setDate(weekStart.getDate() - (weekStart.getDay() || 7) + 1); // Monday
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-
     const ingresos = { hoy: 0, semana: 0, mes: 0 };
 
     for (const c of citasParaIngresos) {
-      const d = new Date(c.fecha);
-      d.setHours(0, 0, 0, 0);
       const basePrice = c.servicios.reduce((acc, s) => acc + Number(s.precio), 0);
       const precioFinal = basePrice - (c.precio_ajustado ?? 0);
 
-      if (d.getTime() === todayStart.getTime()) ingresos.hoy += precioFinal;
-      if (d >= weekStart) ingresos.semana += precioFinal;
-      if (d >= monthStart) ingresos.mes += precioFinal;
+      if (getUTCDateKey(c.fecha) === todayKey) ingresos.hoy += precioFinal;
+      if (c.fecha >= weekStart) ingresos.semana += precioFinal;
+      if (c.fecha >= monthStart) ingresos.mes += precioFinal;
     }
 
-    return NextResponse.json({ totalCitas, citasHoy, pendientes, totalClientes, totalServicios, ingresos });
+    const response: StatsResponse = {
+      totalCitas,
+      citasHoy,
+      pendientes,
+      totalClientes,
+      totalServicios,
+      ingresos,
+    };
+    return NextResponse.json(response);
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Error al obtener estadísticas' }, { status: 500 });

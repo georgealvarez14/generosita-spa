@@ -114,7 +114,7 @@ export default function AdminDashboard() {
                     <div className="flex items-center gap-2 text-zinc-100 font-bold text-sm">
                       <TrendingUp className="w-4 h-4 text-brand" /> Rendimiento Pro
                     </div>
-                    <p className="text-zinc-400 text-xs leading-relaxed">Optimización de GPU para un scroll de "mantequilla" en dispositivos móviles.</p>
+                    <p className="text-zinc-400 text-xs leading-relaxed">Optimización de GPU para un scroll de &ldquo;mantequilla&rdquo; en dispositivos móviles.</p>
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-zinc-100 font-bold text-sm">

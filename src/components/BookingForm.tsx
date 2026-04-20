@@ -128,6 +128,8 @@ export default function BookingForm() {
         .catch(err => console.error("Error fetching availability:", err))
         .finally(() => setLoadingAvailability(false));
     }
+  // `dates` is a stable memoised list; adding it would re-fetch on every render
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, selectedServices]);
 
   const handleNext = () => {
